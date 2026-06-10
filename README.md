@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gawa — Frontend Web
 
-## Getting Started
+Tableau de bord web du **système de gestion scolaire Gawa**, conçu pour les écoles des Comores : centré sur l'enseignant et pensé pour des connexions instables.
 
-First, run the development server:
+Application **Next.js 16 (App Router)** en **React 19** et **TypeScript**, stylée avec **Tailwind CSS v4**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Stack technique
+
+| Composant         | Technologie                          |
+|-------------------|--------------------------------------|
+| Framework         | Next.js 16 (App Router)              |
+| UI                | React 19, TypeScript 5               |
+| Styles            | Tailwind CSS v4                      |
+| État global       | Zustand                              |
+| Données serveur   | TanStack Query (React Query)         |
+| Client HTTP       | Axios                                |
+| Auth              | JWT (`jwt-decode`)                   |
+| Icônes            | `lucide-react`                       |
+| Tests E2E         | Playwright                           |
+
+---
+
+## Structure du projet
+
+```
+app/                  # Routes (App Router)
+  login/              # Authentification
+  dashboard/
+    admin/            # Espace administration
+    teacher/          # Espace enseignant
+    parent/           # Espace parent
+    student/          # Espace élève
+    platform/         # Espace plateforme (super-admin)
+components/
+  shell/              # Layout, navigation, structure
+  ui/                 # Composants UI réutilisables
+features/             # Logique métier par rôle (admin, teacher, parent, student, platform, auth)
+lib/
+  api/                # Client API et endpoints
+  auth/               # Gestion des tokens et sessions
+  utils/              # Utilitaires
+public/               # Assets statiques
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+L'application s'appuie sur l'[API backend Gawa](https://github.com/ZayTauven/Gawa-Backend) (Django REST Framework + JWT).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Démarrage
 
-## Learn More
+### Prérequis
+- Node.js 20+
+- Le [backend Gawa](https://github.com/ZayTauven/Gawa-Backend) en cours d'exécution (par défaut `http://localhost:8000`)
 
-To learn more about Next.js, take a look at the following resources:
+### Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Ouvrir [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+### Configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Créez un fichier `.env.local` (non versionné) pour pointer vers l'API :
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+---
+
+## Scripts
+
+| Commande         | Description                          |
+|------------------|--------------------------------------|
+| `npm run dev`    | Serveur de développement             |
+| `npm run build`  | Build de production                  |
+| `npm run start`  | Démarre le build de production       |
+| `npm run lint`   | Vérification ESLint                  |
+
+---
+
+## Rôles & espaces
+
+L'interface s'adapte au rôle de l'utilisateur authentifié (rôle porté par le JWT) :
+
+- **Admin** — gestion de l'école, classes, utilisateurs.
+- **Enseignant** — appel, cours, évaluations, communication.
+- **Parent** — suivi de la scolarité de l'enfant.
+- **Élève** — cours et progression.
+- **Plateforme** — supervision multi-écoles.
+
+---
+
+## Projet Gawa
+
+Ce frontend fait partie de l'écosystème Gawa :
+- **Frontend web** (ce repo) — tableau de bord Next.js.
+- **Backend** — API Django REST Framework.
+- **Landing** — site vitrine Next.js.
