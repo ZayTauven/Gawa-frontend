@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  fetchAttendance,
+  fetchAttempts,
   fetchClassrooms,
   fetchInvoices,
   fetchSchoolUsers,
@@ -11,6 +13,8 @@ export const adminKeys = {
   classrooms: ["admin", "classrooms"] as const,
   invoices: ["admin", "invoices"] as const,
   users: ["admin", "users"] as const,
+  attendance: ["admin", "attendance"] as const,
+  attempts: ["admin", "attempts"] as const,
 };
 
 export function useStudents() {
@@ -27,4 +31,12 @@ export function useInvoices() {
 
 export function useSchoolUsers() {
   return useQuery({ queryKey: adminKeys.users, queryFn: fetchSchoolUsers });
+}
+
+export function useAttendance() {
+  return useQuery({ queryKey: adminKeys.attendance, queryFn: fetchAttendance });
+}
+
+export function useAttempts() {
+  return useQuery({ queryKey: adminKeys.attempts, queryFn: fetchAttempts });
 }

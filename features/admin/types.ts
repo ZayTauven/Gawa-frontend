@@ -42,3 +42,20 @@ export interface SchoolUser {
   last_name: string;
   is_active: boolean;
 }
+
+export type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE";
+
+export interface AttendanceRecord {
+  id: string;
+  student: string;
+  status: AttendanceStatus;
+  date: string;
+}
+
+export interface Attempt {
+  id: string;
+  student: string;
+  quiz: string;
+  score: number;
+  completed_at: string;
+}

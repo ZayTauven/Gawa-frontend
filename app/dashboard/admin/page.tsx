@@ -10,13 +10,20 @@ import { StickerStat } from "@/components/ui/StickerStat";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
 import { Donut, BarChart, LegendRow } from "@/components/charts";
 import { useAuthStore } from "@/lib/auth/useAuthStore";
+import { todayKey, dayKey } from "@/lib/utils/date";
 import {
+  useAttendance,
+  useAttempts,
   useClassrooms,
   useInvoices,
   useSchoolUsers,
   useStudents,
 } from "@/features/admin/hooks";
-import type { Classroom, Invoice, InvoiceStatus } from "@/features/admin/types";
+import type { Classroom, InvoiceStatus } from "@/features/admin/types";
+
+function shortLabel(t: string): string {
+  return t.length > 11 ? `${t.slice(0, 10)}…` : t;
+}
 
 // Palette sémantique des statuts de facture (kit Craie vive).
 const PAYMENT_TONES: Record<InvoiceStatus, { color: string; label: string }> = {
@@ -41,9 +48,16 @@ export default function AdminHome() {
   const classrooms = useClassrooms();
   const invoices = useInvoices();
   const users = useSchoolUsers();
+  const attendance = useAttendance();
+  const attempts = useAttempts();
 
   const loading =
-    students.isLoading || classrooms.isLoading || invoices.isLoading || users.isLoading;
+    students.isLoading ||
+    classrooms.isLoading ||
+    invoices.isLoading ||
+    users.isLoading ||
+    attendance.isLoading ||
+    attempts.isLoading;
   const error =
     students.isError || classrooms.isError || invoices.isError || users.isError;
 
@@ -61,8 +75,44 @@ export default function AdminHome() {
     })).filter((s) => s.count > 0);
     const totalInv = invList.length || 1;
 
-    // Collecte des frais : somme encaissée (factures réglées) par mois, via due_date.
-    const collecte = collectByMonth(invList);
+    // Décisionnel 1 — taux de présence par classe (aujourd'hui), via l'appel.
+    const today = todayKey();
+    const statusByStudent = new Map(
+      (attendance.data ?? [])
+        .filter((a) => dayKey(a.date) === today)
+        .map((a) => [a.student, a.status]),
+    );
+    const presenceByClass = (classrooms.data ?? []).map((c) => {
+      const total = c.student_count ?? c.students.length;
+      const bad = c.students.filter((s) => {
+        const st = statusByStudent.get(s.id);
+        return st === "ABSENT" || st === "LATE";
+      }).length;
+      const rate = total > 0 ? Math.round(((total - bad) / total) * 100) : 100;
+      return { label: shortLabel(c.name), value: rate };
+    });
+
+    // Décisionnel 2 — évolution des progrès : score moyen des quiz par mois.
+    const monthly = new Map<string, { sum: number; n: number }>();
+    for (const a of attempts.data ?? []) {
+      const d = new Date(a.completed_at);
+      if (Number.isNaN(+d)) continue;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const cur = monthly.get(key) ?? { sum: 0, n: 0 };
+      cur.sum += a.score;
+      cur.n += 1;
+      monthly.set(key, cur);
+    }
+    const progress = [...monthly.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([key, { sum, n }]) => {
+        const [y, mo] = key.split("-").map(Number);
+        const label = new Intl.DateTimeFormat("fr-FR", { month: "short" })
+          .format(new Date(y, mo - 1, 1))
+          .replace(".", "");
+        return { label, value: Math.round(sum / n) };
+      });
 
     return {
       students: students.data?.length ?? 0,
@@ -74,9 +124,10 @@ export default function AdminHome() {
       invoiceTotal: invList.length,
       byStatus,
       totalInv,
-      collecte,
+      presenceByClass,
+      progress,
     };
-  }, [students.data, classrooms.data, invoices.data, users.data]);
+  }, [students.data, classrooms.data, invoices.data, users.data, attendance.data, attempts.data]);
 
   const name = user?.firstName || user?.email?.split("@")[0] || "Directeur";
 
@@ -94,6 +145,8 @@ export default function AdminHome() {
             classrooms.refetch();
             invoices.refetch();
             users.refetch();
+            attendance.refetch();
+            attempts.refetch();
           }}
         />
       ) : (
@@ -124,21 +177,50 @@ export default function AdminHome() {
             <StickerStat icon={<Wallet className="h-7 w-7 text-orange" />} value={stats.overdueCount} label="Factures en retard" tone="orange" />
           </div>
 
-          {/* Collecte des frais par mois */}
-          <div className="rounded-card border border-line bg-white p-5 shadow-sm">
-            <h3 className="font-heading text-base font-bold text-ink">Collecte des frais</h3>
-            <p className="mb-3 text-xs text-ink/50">Montant encaissé par mois (factures réglées)</p>
-            {stats.collecte.length === 0 ? (
-              <EmptyState message="Aucun encaissement enregistré pour l'instant." />
-            ) : (
-              <BarChart
-                data={stats.collecte}
-                color="var(--color-emerald)"
-                highlight={stats.collecte.length - 1}
-                unit=" KMF"
-                height={170}
-              />
-            )}
+          {/* Bande décisionnelle : présence opérationnelle + progrès pédagogique */}
+          <div className="grid gap-5 lg:grid-cols-2">
+            <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+              <h3 className="font-heading text-base font-bold text-ink">
+                Taux de présence par classe
+              </h3>
+              <p className="mb-3 text-xs text-ink/50">
+                Aujourd&apos;hui · repérez les classes à risque de décrochage
+              </p>
+              {stats.presenceByClass.length === 0 ? (
+                <EmptyState message="Aucune classe à afficher." />
+              ) : (
+                <BarChart
+                  data={stats.presenceByClass}
+                  color="var(--color-emerald)"
+                  highlight={stats.presenceByClass.reduce(
+                    (wi, b, i, arr) => (b.value < arr[wi].value ? i : wi),
+                    0,
+                  )}
+                  unit="%"
+                  height={170}
+                />
+              )}
+            </div>
+
+            <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+              <h3 className="font-heading text-base font-bold text-ink">
+                Évolution des progrès
+              </h3>
+              <p className="mb-3 text-xs text-ink/50">
+                Score moyen des quiz par mois · l&apos;effet pédagogique
+              </p>
+              {stats.progress.length === 0 ? (
+                <EmptyState message="Pas encore assez de quiz tentés pour mesurer les progrès." />
+              ) : (
+                <BarChart
+                  data={stats.progress}
+                  color="var(--color-emerald)"
+                  highlight={stats.progress.length - 1}
+                  unit="%"
+                  height={170}
+                />
+              )}
+            </div>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-3">
@@ -149,28 +231,6 @@ export default function AdminHome() {
       )}
     </>
   );
-}
-
-/** Regroupe le montant encaissé (factures réglées) par mois, via due_date. */
-function collectByMonth(invoices: Invoice[]): { label: string; value: number }[] {
-  const sums = new Map<string, number>();
-  for (const inv of invoices) {
-    if (inv.status !== "PAID" || !inv.due_date) continue;
-    const d = new Date(inv.due_date);
-    if (Number.isNaN(+d)) continue;
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    sums.set(key, (sums.get(key) ?? 0) + Number(inv.amount || 0));
-  }
-  return [...sums.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-6)
-    .map(([key, value]) => {
-      const [y, mo] = key.split("-").map(Number);
-      const label = new Intl.DateTimeFormat("fr-FR", { month: "short" })
-        .format(new Date(y, mo - 1, 1))
-        .replace(".", "");
-      return { label, value: Math.round(value) };
-    });
 }
 
 function PaymentsCard({
