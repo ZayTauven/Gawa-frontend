@@ -137,7 +137,7 @@ export default function PlatformHome() {
 
 function OverdueCard({ count, amount }: { count: number; amount: number }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">
           Santé financière
@@ -158,7 +158,7 @@ function OverdueCard({ count, amount }: { count: number; amount: number }) {
 
 function SchoolsPanel({ schools }: { schools: School[] }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm lg:col-span-2">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Écoles</h3>
         <Link
@@ -210,7 +210,7 @@ const ACTION_LABEL: Record<AccessLog["action_type"], { text: string; cls: string
 
 function SecurityPanel({ logs }: { logs: AccessLog[] }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">
           Accès aux archives

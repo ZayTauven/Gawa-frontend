@@ -2,21 +2,35 @@
 
 /* ----------------------------------------------------------------------------
    Gawa Web Admin — Design tokens (Tailwind v4)
-   Variante "dashboard" : palette de marque émeraude/orange, surfaces denses.
+   Direction artistique « C · Craie vive » : le tableau d'école réinventé —
+   émeraude vive, traits de marqueur, Schibsted Grotesk + Albert Sans.
+   (cf. handoff design « Direction Gawa.html », direction retenue par l'équipe)
 ---------------------------------------------------------------------------- */
 @theme {
-  --color-forest: #065f46;
-  --color-emerald: #10b981;
-  --color-emerald-soft: #d1fae5;
-  --color-mint: #ecfdf5;
-  --color-orange: #f59e0b;
-  --color-orange-soft: #fef3c7;
-  --color-ink: #0f2e25;
-  --color-soft: #f9fafb;
-  --color-line: #e9ecef;
+  /* Verts de marque — du plus profond (texte/CTA) à l'accent vif */
+  --color-deeper: #08432f;
+  --color-forest: #0c5a41; /* « deep » — CTA primaire, sidebar, avatars */
+  --color-emerald: #17b26a; /* accent vif — positif, filets actifs */
+  --color-emerald-soft: #ddf3e6;
+  --color-mint: #f0f8f2;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-outfit), var(--font-inter), sans-serif;
+  /* Accents — orange = attention/CTA secondaire, rose = relance */
+  --color-orange: #f59e0b;
+  --color-orange-soft: #fdf0d2;
+  --color-rose: #e0506a;
+  --color-rose-soft: #f9e3e6;
+
+  /* Encre & surfaces */
+  --color-ink: #10291f;
+  --color-soft: #f5f8f5; /* fond d'application */
+  --color-line: #e4eae4;
+
+  /* Rayons maîtrisés : cartes 14px, contrôles 8px */
+  --radius-card: 14px;
+  --radius-control: 8px;
+
+  --font-sans: var(--font-albert), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-schibsted), var(--font-albert), sans-serif;
 }
 
 body {
@@ -30,4 +44,10 @@ h2,
 h3,
 h4 {
   font-family: var(--font-heading);
+}
+
+/* Focus clavier visible (WCAG AA) — anneau émeraude cohérent sur toute l'app */
+:focus-visible {
+  outline: 2px solid var(--color-emerald);
+  outline-offset: 2px;
 }

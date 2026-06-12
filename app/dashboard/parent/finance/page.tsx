@@ -49,7 +49,7 @@ export default function ParentFinancePage() {
         <StatCard label="Reste à payer (KMF)" value={totals.due.toLocaleString("fr-FR")} accent="orange" />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
         {list.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucune facture." />

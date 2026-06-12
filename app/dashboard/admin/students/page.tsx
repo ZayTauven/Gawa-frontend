@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SearchField } from "@/components/ui/SearchField";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
 import { useClassrooms, useStudents } from "@/features/admin/hooks";
 
@@ -46,20 +46,17 @@ export default function AdminStudentsPage() {
     <>
       <PageHeader title="Élèves" subtitle={`${filtered.length} élève(s) dans l'établissement.`} />
 
-      <div className="relative mb-4 max-w-xs">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
-        <input
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setPage(0);
-          }}
-          placeholder="Rechercher (nom ou matricule)…"
-          className="w-full rounded-lg border border-line bg-white px-3 py-2 pl-9 text-sm outline-none focus:border-forest"
-        />
-      </div>
+      <SearchField
+        value={query}
+        onChange={(v) => {
+          setQuery(v);
+          setPage(0);
+        }}
+        placeholder="Rechercher (nom ou matricule)…"
+        className="mb-4 max-w-xs"
+      />
 
-      <div className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
         {rows.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucun élève ne correspond." />
@@ -93,7 +90,7 @@ export default function AdminStudentsPage() {
           <button
             disabled={current === 0}
             onClick={() => setPage(current - 1)}
-            className="rounded-lg px-3 py-1.5 font-medium text-forest disabled:opacity-40"
+            className="rounded-control px-3 py-1.5 font-medium text-forest disabled:opacity-40"
           >
             Précédent
           </button>
@@ -101,7 +98,7 @@ export default function AdminStudentsPage() {
           <button
             disabled={current >= pageCount - 1}
             onClick={() => setPage(current + 1)}
-            className="rounded-lg px-3 py-1.5 font-medium text-forest disabled:opacity-40"
+            className="rounded-control px-3 py-1.5 font-medium text-forest disabled:opacity-40"
           >
             Suivant
           </button>

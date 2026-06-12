@@ -16,6 +16,7 @@ import {
 import { getRoleNav, type NavItem } from "@/lib/auth/roles";
 import type { UiRole } from "@/lib/auth/types";
 import { Logo } from "@/components/ui/Logo";
+import { Hibou } from "@/components/ui/Hibou";
 import { cn } from "@/lib/utils/cn";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -56,10 +57,10 @@ export function Sidebar({ role }: { role: UiRole }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-control px-3 py-2.5 text-sm transition-colors",
                 active
-                  ? "bg-mint text-forest"
-                  : "text-ink/60 hover:bg-soft hover:text-ink",
+                  ? "bg-mint font-bold text-forest shadow-[inset_3px_0_0_var(--color-emerald)]"
+                  : "font-medium text-ink/60 hover:bg-soft hover:text-ink",
               )}
             >
               <Icon className="h-5 w-5" strokeWidth={2} />
@@ -68,6 +69,17 @@ export function Sidebar({ role }: { role: UiRole }) {
           );
         })}
       </nav>
+
+      {/* Copilote de révision — Professeur Hibou */}
+      <div className="m-3 flex items-center gap-2.5 overflow-hidden rounded-card bg-forest p-3 text-white">
+        <Hibou pose="neutral" size={34} />
+        <div className="min-w-0">
+          <p className="font-heading text-xs font-bold">Professeur Hibou</p>
+          <p className="mt-0.5 text-[10.5px] text-white/70">
+            Votre copilote de révision
+          </p>
+        </div>
+      </div>
     </aside>
   );
 }

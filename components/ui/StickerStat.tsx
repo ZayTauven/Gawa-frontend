@@ -27,7 +27,7 @@ export function StickerStat({
   tone?: Tone;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-line bg-white p-4 shadow-sm">
+    <div className="flex items-center gap-4 rounded-card border border-line bg-white p-4 shadow-sm">
       <div
         className={cn(
           "flex h-14 w-14 shrink-0 items-center justify-center rounded-lg",

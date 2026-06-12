@@ -182,7 +182,7 @@ function PresenceCard({
   const safeTotal = total || 1;
 
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">
           Présences aujourd&apos;hui
@@ -215,7 +215,7 @@ function MyClasses({
   classes: { id: string; name: string; year: string; count: number }[];
 }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm lg:col-span-2">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Mes classes</h3>
         <Link
@@ -264,7 +264,7 @@ function MyClasses({
 
 function Shortcuts() {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <h3 className="mb-4 font-heading text-base font-bold text-ink">Raccourcis</h3>
       <div className="space-y-3">
         <Link

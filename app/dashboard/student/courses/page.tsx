@@ -42,7 +42,7 @@ export default function StudentCoursesPage() {
             const unlocked = all.filter((c) => c.status === "UNLOCKED");
             const lockedCount = all.length - unlocked.length;
             return (
-              <div key={course.id} className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+              <div key={course.id} className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
                 <div className="border-b border-line px-5 py-4">
                   <h2 className="font-heading text-lg font-bold text-ink">{course.title}</h2>
                   <p className="text-xs text-ink/50">{course.teacher_name}</p>

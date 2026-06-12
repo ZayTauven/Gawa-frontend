@@ -76,7 +76,7 @@ export default function TeacherResourcesPage() {
             value={newCourse}
             onChange={(e) => setNewCourse(e.target.value)}
             placeholder="Titre d'un nouveau cours (ex. Mathématiques 3ème)"
-            className="flex-1 rounded-lg border border-line px-4 py-2.5 outline-none focus:border-forest"
+            className="flex-1 rounded-lg border border-line px-4 py-2.5 outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
           />
           <Button type="submit" disabled={createCourse.isPending}>
             <Plus className="h-4 w-4" />
@@ -151,7 +151,7 @@ function CourseBlock({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Ajouter un chapitre…"
-          className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-forest"
+          className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
         />
         <Button type="submit" variant="secondary" size="sm" disabled={createChapter.isPending}>
           <Plus className="h-4 w-4" />
@@ -265,12 +265,12 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
             value={resTitle}
             onChange={(e) => setResTitle(e.target.value)}
             placeholder="Titre de la ressource"
-            className="flex-1 rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-forest"
+            className="flex-1 rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
           />
           <select
             value={resType}
             onChange={(e) => setResType(e.target.value as ResourceType)}
-            className="rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-forest"
+            className="rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
           >
             <option value="PDF">PDF</option>
             <option value="LINK">Lien</option>
@@ -281,7 +281,7 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
             value={resUrl}
             onChange={(e) => setResUrl(e.target.value)}
             placeholder="URL (optionnel)"
-            className="flex-1 rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-forest"
+            className="flex-1 rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
           />
           <Button type="submit" size="sm" disabled={createResource.isPending}>
             Ajouter

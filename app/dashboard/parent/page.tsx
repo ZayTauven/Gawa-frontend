@@ -106,7 +106,7 @@ export default function ParentHome() {
 
 function FinanceCard({ count, amount }: { count: number; amount: number }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Paiements</h3>
         <Wallet className="h-5 w-5 text-orange" />
@@ -129,7 +129,7 @@ function ChildrenPanel({ kids, attendance }: { kids: Child[]; attendance: Attend
     attendance.filter((a) => a.student === id && a.status === status).length;
 
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm lg:col-span-2">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Mes enfants</h3>
         <Link href="/dashboard/parent/carnet" className="flex items-center gap-1 text-sm font-semibold text-forest hover:underline">
@@ -169,7 +169,7 @@ function ChildrenPanel({ kids, attendance }: { kids: Child[]; attendance: Attend
 
 function AnnouncementsPanel({ broadcasts }: { broadcasts: Broadcast[] }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
         <Megaphone className="h-5 w-5 text-forest" />
         <h3 className="font-heading text-base font-bold text-ink">Annonces</h3>

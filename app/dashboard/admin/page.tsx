@@ -107,7 +107,7 @@ export default function AdminHome() {
 
 function FinanceCard({ count, amount }: { count: number; amount: number }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Finances</h3>
         <Wallet className="h-5 w-5 text-orange" />
@@ -130,7 +130,7 @@ function FinanceCard({ count, amount }: { count: number; amount: number }) {
 
 function ClassesPanel({ classes }: { classes: Classroom[] }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm lg:col-span-2">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Classes</h3>
         <Link
@@ -173,7 +173,7 @@ function QuickLinks() {
     { href: "/dashboard/admin/finance", label: "Suivi des paiements", sticker: "/stickers/attendance.png" },
   ];
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <h3 className="mb-4 font-heading text-base font-bold text-ink">Accès rapides</h3>
       <div className="space-y-3">
         {links.map((l) => (

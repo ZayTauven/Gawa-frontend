@@ -108,7 +108,7 @@ function ResultsCard({ attempts, quizzes }: { attempts: Attempt[]; quizzes: Quiz
     .sort((a, b) => +new Date(b.completed_at) - +new Date(a.completed_at))
     .slice(0, 4);
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <h3 className="mb-4 font-heading text-base font-bold text-ink">Mes derniers résultats</h3>
       {recent.length === 0 ? (
         <EmptyState message="Aucun quiz tenté pour l'instant." />
@@ -136,7 +136,7 @@ function ResultsCard({ attempts, quizzes }: { attempts: Attempt[]; quizzes: Quiz
 
 function CoursesPanel({ courses }: { courses: Course[] }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm lg:col-span-2">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Mes cours</h3>
         <Link href="/dashboard/student/courses" className="flex items-center gap-1 text-sm font-semibold text-forest hover:underline">
@@ -169,7 +169,7 @@ function CoursesPanel({ courses }: { courses: Course[] }) {
 
 function ExamsLink() {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
       <h3 className="mb-4 font-heading text-base font-bold text-ink">Préparer les examens</h3>
       <Link
         href="/dashboard/student/exams"

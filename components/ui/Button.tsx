@@ -1,13 +1,16 @@
 import { cn } from "@/lib/utils/cn";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "accent" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md";
 
+// Craie vive : primaire = vert profond, accent = orange (CTA secondaire/encouragement),
+// secondaire = menthe bordée, ghost = discret.
 const VARIANTS: Record<Variant, string> = {
   primary: "bg-forest text-white hover:opacity-95",
-  secondary: "bg-mint text-forest hover:bg-emerald-soft",
+  accent: "bg-orange text-[#231300] hover:opacity-95",
+  secondary: "border border-line bg-mint text-forest hover:bg-emerald-soft",
   ghost: "text-ink/70 hover:bg-soft hover:text-ink",
-  danger: "bg-orange text-white hover:opacity-95",
+  danger: "bg-rose text-white hover:opacity-95",
 };
 
 const SIZES: Record<Size, string> = {

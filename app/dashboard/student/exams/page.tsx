@@ -54,7 +54,7 @@ export default function StudentExamsPage() {
       {published.length === 0 ? (
         <EmptyState message="Aucun quiz publié pour le moment." />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+        <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
           <ul className="divide-y divide-line">
             {published.map((q) => {
               const best = bestByQuiz.get(q.id);

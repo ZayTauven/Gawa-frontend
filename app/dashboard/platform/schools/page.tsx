@@ -15,7 +15,7 @@ import type { School } from "@/features/platform/types";
 
 const PAGE_SIZE = 8;
 const inputCls =
-  "rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-forest";
+  "rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft";
 
 export default function SchoolsPage() {
   const schools = useSchools();
@@ -83,7 +83,7 @@ export default function SchoolsPage() {
               },
             );
           }}
-          className="mb-4 flex flex-col gap-3 rounded-xl border border-line bg-white p-4 shadow-sm sm:flex-row sm:items-end"
+          className="mb-4 flex flex-col gap-3 rounded-card border border-line bg-white p-4 shadow-sm sm:flex-row sm:items-end"
         >
           <label className="flex-1 text-sm font-medium text-ink">
             Code
@@ -114,7 +114,7 @@ export default function SchoolsPage() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
         {rows.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucune école ne correspond." />

@@ -29,7 +29,7 @@ export default function AdminClassesPage() {
           {classes.map((c) => {
             const open = openId === c.id;
             return (
-              <div key={c.id} className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+              <div key={c.id} className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
                 <button
                   onClick={() => setOpenId(open ? null : c.id)}
                   className="flex w-full items-center justify-between px-5 py-4 text-left"

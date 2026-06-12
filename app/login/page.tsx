@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-soft px-6">
-      <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-sm ring-1 ring-line">
+      <div className="w-full max-w-sm rounded-card bg-white p-8 shadow-sm ring-1 ring-line">
         <LoginForm />
       </div>
     </main>

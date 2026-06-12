@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import { Outfit, Inter } from "next/font/google";
+import { Schibsted_Grotesk, Albert_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"] });
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+// Direction « Craie vive » : Schibsted Grotesk (titres) + Albert Sans (corps).
+const schibsted = Schibsted_Grotesk({
+  variable: "--font-schibsted",
+  subsets: ["latin"],
+  weight: ["500", "700", "800"],
+});
+const albert = Albert_Sans({
+  variable: "--font-albert",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "Gawa — Espace administration",
@@ -19,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${outfit.variable} ${inter.variable} h-full antialiased`}
+      className={`${schibsted.variable} ${albert.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <Providers>{children}</Providers>

@@ -81,7 +81,7 @@ export default function AdminFinancePage() {
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
         {rows.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucune facture pour ce filtre." />

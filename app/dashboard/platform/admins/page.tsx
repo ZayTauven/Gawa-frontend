@@ -15,7 +15,7 @@ import {
 import type { PlatformUser } from "@/features/platform/types";
 
 const inputCls =
-  "rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-forest";
+  "rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft";
 
 export default function AdminsPage() {
   const users = usePlatformUsers();
@@ -87,7 +87,7 @@ export default function AdminsPage() {
       {showCreate && (
         <form
           onSubmit={submit}
-          className="mb-4 grid gap-3 rounded-xl border border-line bg-white p-4 shadow-sm sm:grid-cols-2"
+          className="mb-4 grid gap-3 rounded-card border border-line bg-white p-4 shadow-sm sm:grid-cols-2"
         >
           <label className="text-sm font-medium text-ink">
             Email
@@ -153,7 +153,7 @@ export default function AdminsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
         {admins.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucun administrateur d'école." />

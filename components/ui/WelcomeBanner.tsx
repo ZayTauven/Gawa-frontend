@@ -19,10 +19,10 @@ export function WelcomeBanner({
 }) {
   return (
     <div
-      className="relative overflow-hidden rounded-xl p-6 text-white shadow-sm sm:p-7"
+      className="relative overflow-hidden rounded-card p-6 text-white shadow-sm sm:p-7"
       style={{
         background:
-          "linear-gradient(135deg, var(--color-forest) 0%, var(--color-forest) 45%, var(--color-emerald) 100%)",
+          "linear-gradient(130deg, var(--color-deeper) 0%, var(--color-forest) 55%, var(--color-emerald) 140%)",
       }}
     >
       {/* halo décoratif */}
