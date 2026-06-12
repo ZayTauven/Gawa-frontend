@@ -1,18 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { SearchField } from "@/components/ui/SearchField";
-import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
+import { DataTable } from "@/components/ui/DataTable";
+import { Spinner, ErrorState } from "@/components/ui/States";
 import { useClassrooms, useStudents } from "@/features/admin/hooks";
-
-const PAGE_SIZE = 10;
+import type { Student } from "@/features/admin/types";
 
 export default function AdminStudentsPage() {
   const students = useStudents();
   const classrooms = useClassrooms();
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(0);
 
   // élève -> nom de classe (via la M2M classroom.students)
   const classByStudent = useMemo(() => {
@@ -23,87 +21,66 @@ export default function AdminStudentsPage() {
     return map;
   }, [classrooms.data]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const list = students.data ?? [];
-    if (!q) return list;
-    return list.filter(
-      (s) =>
-        `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) ||
-        s.matricule.toLowerCase().includes(q),
-    );
-  }, [students.data, query]);
-
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const current = Math.min(page, pageCount - 1);
-  const rows = filtered.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
+  const columns = useMemo<ColumnDef<Student, unknown>[]>(
+    () => [
+      {
+        id: "name",
+        header: "Élève",
+        accessorFn: (s) => `${s.last_name} ${s.first_name}`,
+        cell: ({ row, getValue }) => (
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-mint text-sm font-bold text-forest">
+              {(row.original.first_name?.[0] ?? "?").toUpperCase()}
+            </span>
+            <span className="font-medium text-ink">{getValue() as string}</span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "matricule",
+        header: "Matricule",
+        cell: ({ getValue }) => (
+          <span className="text-ink/60">{getValue() as string}</span>
+        ),
+      },
+      {
+        id: "classe",
+        header: "Classe",
+        accessorFn: (s) => classByStudent.get(s.id) ?? "Non affecté",
+        cell: ({ getValue }) => (
+          <span className="rounded-full bg-soft px-2.5 py-0.5 text-xs font-semibold text-ink/60">
+            {getValue() as string}
+          </span>
+        ),
+      },
+    ],
+    [classByStudent],
+  );
 
   if (students.isLoading) return <Spinner label="Chargement des élèves…" />;
   if (students.isError)
-    return <ErrorState message="Impossible de charger les élèves." onRetry={() => students.refetch()} />;
+    return (
+      <ErrorState
+        message="Impossible de charger les élèves."
+        onRetry={() => students.refetch()}
+      />
+    );
+
+  const list = students.data ?? [];
 
   return (
     <>
-      <PageHeader title="Élèves" subtitle={`${filtered.length} élève(s) dans l'établissement.`} />
-
-      <SearchField
-        value={query}
-        onChange={(v) => {
-          setQuery(v);
-          setPage(0);
-        }}
-        placeholder="Rechercher (nom ou matricule)…"
-        className="mb-4 max-w-xs"
+      <PageHeader
+        title="Élèves"
+        subtitle={`${list.length} élève(s) dans l'établissement.`}
       />
-
-      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
-        {rows.length === 0 ? (
-          <div className="p-6">
-            <EmptyState message="Aucun élève ne correspond." />
-          </div>
-        ) : (
-          <ul className="divide-y divide-line">
-            {rows.map((s) => (
-              <li key={s.id} className="flex items-center justify-between px-5 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-mint text-sm font-bold text-forest">
-                    {(s.first_name?.[0] ?? "?").toUpperCase()}
-                  </span>
-                  <div>
-                    <p className="font-medium text-ink">
-                      {s.last_name} {s.first_name}
-                    </p>
-                    <p className="text-xs text-ink/50">{s.matricule}</p>
-                  </div>
-                </div>
-                <span className="rounded-full bg-soft px-2.5 py-0.5 text-xs font-semibold text-ink/60">
-                  {classByStudent.get(s.id) ?? "Non affecté"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {pageCount > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-3 text-sm">
-          <button
-            disabled={current === 0}
-            onClick={() => setPage(current - 1)}
-            className="rounded-control px-3 py-1.5 font-medium text-forest disabled:opacity-40"
-          >
-            Précédent
-          </button>
-          <span className="text-ink/50">Page {current + 1} / {pageCount}</span>
-          <button
-            disabled={current >= pageCount - 1}
-            onClick={() => setPage(current + 1)}
-            className="rounded-control px-3 py-1.5 font-medium text-forest disabled:opacity-40"
-          >
-            Suivant
-          </button>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={list}
+        searchPlaceholder="Rechercher (nom, matricule ou classe)…"
+        exportFileName="eleves-gawa"
+        emptyMessage="Aucun élève ne correspond."
+      />
     </>
   );
 }

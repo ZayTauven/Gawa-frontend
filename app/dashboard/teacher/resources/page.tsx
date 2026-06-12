@@ -5,7 +5,9 @@ import { Lock, LockOpen, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { TextInput, Select } from "@/components/ui/Field";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
+import { toast } from "@/components/ui/Toast";
 import { StatusPill } from "@/features/teacher/StatusPill";
 import {
   useChapters,
@@ -67,16 +69,22 @@ export default function TeacherResourcesPage() {
             if (!title) return;
             createCourse.mutate(
               { title },
-              { onSuccess: () => setNewCourse("") },
+              {
+                onSuccess: () => {
+                  setNewCourse("");
+                  toast.success("Cours créé", { description: title });
+                },
+                onError: () => toast.error("Échec de la création du cours."),
+              },
             );
           }}
           className="flex flex-col gap-3 sm:flex-row"
         >
-          <input
+          <TextInput
             value={newCourse}
             onChange={(e) => setNewCourse(e.target.value)}
             placeholder="Titre d'un nouveau cours (ex. Mathématiques 3ème)"
-            className="flex-1 rounded-lg border border-line px-4 py-2.5 outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
+            className="flex-1"
           />
           <Button type="submit" disabled={createCourse.isPending}>
             <Plus className="h-4 w-4" />
@@ -142,16 +150,22 @@ function CourseBlock({
           if (!t) return;
           createChapter.mutate(
             { course: course.id, title: t, order: chapters.length + 1 },
-            { onSuccess: () => setTitle("") },
+            {
+              onSuccess: () => {
+                setTitle("");
+                toast.success("Chapitre ajouté", { description: t });
+              },
+              onError: () => toast.error("Échec de l'ajout du chapitre."),
+            },
           );
         }}
         className="flex flex-col gap-2 border-t border-line bg-soft px-5 py-3 sm:flex-row"
       >
-        <input
+        <TextInput
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Ajouter un chapitre…"
-          className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
+          className="flex-1"
         />
         <Button type="submit" variant="secondary" size="sm" disabled={createChapter.isPending}>
           <Plus className="h-4 w-4" />
@@ -188,10 +202,17 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
           size="sm"
           disabled={toggleChapter.isPending}
           onClick={() =>
-            toggleChapter.mutate({
-              id: chapter.id,
-              status: published ? "LOCKED" : "UNLOCKED",
-            })
+            toggleChapter.mutate(
+              { id: chapter.id, status: published ? "LOCKED" : "UNLOCKED" },
+              {
+                onSuccess: () =>
+                  toast.success(
+                    published ? "Chapitre verrouillé" : "Chapitre publié",
+                    { description: chapter.title },
+                  ),
+                onError: () => toast.error("Action impossible. Réessayez."),
+              },
+            )
           }
         >
           {published ? (
@@ -225,10 +246,17 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
                 </div>
                 <button
                   onClick={() =>
-                    toggleResource.mutate({
-                      id: res.id,
-                      status: resPublished ? "LOCKED" : "UNLOCKED",
-                    })
+                    toggleResource.mutate(
+                      { id: res.id, status: resPublished ? "LOCKED" : "UNLOCKED" },
+                      {
+                        onSuccess: () =>
+                          toast.success(
+                            resPublished ? "Ressource verrouillée" : "Ressource publiée",
+                            { description: res.title },
+                          ),
+                        onError: () => toast.error("Action impossible. Réessayez."),
+                      },
+                    )
                   }
                   disabled={toggleResource.isPending}
                   className="text-xs font-semibold text-forest underline disabled:opacity-50"
@@ -255,33 +283,36 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
                   setResTitle("");
                   setResUrl("");
                   setShowForm(false);
+                  toast.success("Ressource ajoutée", { description: t });
                 },
+                onError: () => toast.error("Échec de l'ajout de la ressource."),
               },
             );
           }}
-          className="mt-3 flex flex-col gap-2 rounded-lg border border-line p-3 sm:flex-row sm:items-center"
+          className="mt-3 flex flex-col gap-2 rounded-control border border-line p-3 sm:flex-row sm:items-center"
         >
-          <input
+          <TextInput
             value={resTitle}
             onChange={(e) => setResTitle(e.target.value)}
             placeholder="Titre de la ressource"
-            className="flex-1 rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
+            className="flex-1"
           />
-          <select
+          <Select
             value={resType}
-            onChange={(e) => setResType(e.target.value as ResourceType)}
-            className="rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
-          >
-            <option value="PDF">PDF</option>
-            <option value="LINK">Lien</option>
-            <option value="TEXT">Texte</option>
-            <option value="IMAGE">Image</option>
-          </select>
-          <input
+            onValueChange={(v) => setResType(v as ResourceType)}
+            className="sm:w-36"
+            options={[
+              { value: "PDF", label: "PDF" },
+              { value: "LINK", label: "Lien" },
+              { value: "TEXT", label: "Texte" },
+              { value: "IMAGE", label: "Image" },
+            ]}
+          />
+          <TextInput
             value={resUrl}
             onChange={(e) => setResUrl(e.target.value)}
             placeholder="URL (optionnel)"
-            className="flex-1 rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft"
+            className="flex-1"
           />
           <Button type="submit" size="sm" disabled={createResource.isPending}>
             Ajouter
@@ -294,12 +325,6 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
         >
           <Plus className="h-3.5 w-3.5" /> Ajouter une ressource
         </button>
-      )}
-
-      {createResource.isError && (
-        <p className="mt-2 text-xs text-orange">
-          Échec de l&apos;ajout de la ressource.
-        </p>
       )}
     </div>
   );

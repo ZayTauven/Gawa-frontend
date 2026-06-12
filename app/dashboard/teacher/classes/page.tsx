@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
+import { toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils/cn";
 import { dayKey, todayKey } from "@/lib/utils/date";
 import {
@@ -19,7 +19,7 @@ import type { AttendanceRecord, CallStatus } from "@/features/teacher/types";
 const OPTIONS: { value: CallStatus; label: string; active: string }[] = [
   { value: "PRESENT", label: "Présent", active: "bg-emerald text-white" },
   { value: "LATE", label: "Retard", active: "bg-orange text-white" },
-  { value: "ABSENT", label: "Absent", active: "bg-rose-500 text-white" },
+  { value: "ABSENT", label: "Absent", active: "bg-rose text-white" },
 ];
 
 export default function TeacherClassesPage() {
@@ -31,7 +31,6 @@ export default function TeacherClassesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Modifications explicites de l'enseignant pour la classe active.
   const [overrides, setOverrides] = useState<Record<string, CallStatus>>({});
-  const [savedNote, setSavedNote] = useState(false);
 
   const classes = classrooms.data ?? [];
   const activeId = selectedId ?? classes[0]?.id ?? null;
@@ -54,12 +53,10 @@ export default function TeacherClassesPage() {
   function selectClass(id: string) {
     setSelectedId(id);
     setOverrides({});
-    setSavedNote(false);
   }
 
   function setStatus(studentId: string, value: CallStatus) {
     setOverrides((prev) => ({ ...prev, [studentId]: value }));
-    setSavedNote(false);
   }
 
   function handleSave() {
@@ -74,14 +71,20 @@ export default function TeacherClassesPage() {
     }
 
     if (changes.length === 0) {
-      setSavedNote(true);
+      toast.info("Aucune modification à enregistrer.");
       return;
     }
     save.mutate(changes, {
       onSuccess: () => {
         setOverrides({});
-        setSavedNote(true);
+        toast.success("Appel enregistré", {
+          description: `${changes.length} changement(s) synchronisé(s).`,
+        });
       },
+      onError: () =>
+        toast.error("Échec de l'enregistrement", {
+          description: "Vérifiez votre connexion et réessayez.",
+        }),
     });
   }
 
@@ -137,16 +140,9 @@ export default function TeacherClassesPage() {
                     élèves
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  {savedNote && !save.isPending && (
-                    <span className="flex items-center gap-1 text-sm font-medium text-emerald">
-                      <Check className="h-4 w-4" /> Appel enregistré
-                    </span>
-                  )}
-                  <Button onClick={handleSave} disabled={save.isPending}>
-                    {save.isPending ? "Enregistrement…" : "Enregistrer l'appel"}
-                  </Button>
-                </div>
+                <Button onClick={handleSave} disabled={save.isPending}>
+                  {save.isPending ? "Enregistrement…" : "Enregistrer l'appel"}
+                </Button>
               </div>
 
               {selectedClass.students.length === 0 ? (
@@ -188,12 +184,6 @@ export default function TeacherClassesPage() {
                     );
                   })}
                 </ul>
-              )}
-
-              {save.isError && (
-                <div className="px-5 pb-5">
-                  <ErrorState message="L'enregistrement a échoué. Réessayez." />
-                </div>
               )}
             </Card>
           )}
