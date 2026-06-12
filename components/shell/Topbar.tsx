@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { useAuthStore } from "@/lib/auth/useAuthStore";
+import { Tooltip } from "@/components/ui/Tooltip";
 import type { AuthUser, UiRole } from "@/lib/auth/types";
 
 const ROLE_LABEL: Record<UiRole, string> = {
@@ -40,17 +41,22 @@ export function Topbar({ user }: { user: AuthUser }) {
       </div>
 
       <div className="flex items-center gap-4">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-forest text-sm font-bold text-white">
-          {initials(user)}
-        </span>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-ink/60 transition-colors hover:bg-soft hover:text-ink"
-        >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Déconnexion</span>
-        </button>
+        <Tooltip content={`${fullName} · ${ROLE_LABEL[user.uiRole]}`}>
+          <span className="flex h-9 w-9 cursor-default items-center justify-center rounded-full bg-forest text-sm font-bold text-white">
+            {initials(user)}
+          </span>
+        </Tooltip>
+        <Tooltip content="Se déconnecter">
+          <button
+            type="button"
+            onClick={handleLogout}
+            aria-label="Se déconnecter"
+            className="flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-ink/60 transition-colors hover:bg-soft hover:text-ink"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Déconnexion</span>
+          </button>
+        </Tooltip>
       </div>
     </header>
   );

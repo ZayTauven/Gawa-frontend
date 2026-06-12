@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import * as RDialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import { Button } from "./Button";
 import { cn } from "@/lib/utils/cn";
 
 /**
@@ -64,5 +66,57 @@ export function DialogContent({
         {footer && <div className="mt-6 flex justify-end gap-2">{footer}</div>}
       </RDialog.Content>
     </RDialog.Portal>
+  );
+}
+
+/**
+ * Confirmation prête à l'emploi (sur Dialog) : le `children` est le déclencheur.
+ * Idéal pour les actions sensibles (verrouiller un contenu, supprimer…).
+ */
+export function ConfirmDialog({
+  title,
+  description,
+  confirmLabel = "Confirmer",
+  cancelLabel = "Annuler",
+  confirmVariant = "primary",
+  onConfirm,
+  children,
+}: {
+  title: string;
+  description?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  confirmVariant?: React.ComponentProps<typeof Button>["variant"];
+  onConfirm: () => void;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent
+        title={title}
+        description={description}
+        footer={
+          <>
+            <DialogClose asChild>
+              <Button variant="ghost" size="sm">
+                {cancelLabel}
+              </Button>
+            </DialogClose>
+            <Button
+              variant={confirmVariant}
+              size="sm"
+              onClick={() => {
+                onConfirm();
+                setOpen(false);
+              }}
+            >
+              {confirmLabel}
+            </Button>
+          </>
+        }
+      />
+    </Dialog>
   );
 }

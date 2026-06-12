@@ -5,6 +5,7 @@ import { Lock, LockOpen, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/Dialog";
 import { TextInput, Select } from "@/components/ui/Field";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
 import { toast } from "@/components/ui/Toast";
@@ -188,6 +189,19 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
 
   const published = chapter.status === "UNLOCKED";
 
+  function setPublished(next: boolean) {
+    toggleChapter.mutate(
+      { id: chapter.id, status: next ? "UNLOCKED" : "LOCKED" },
+      {
+        onSuccess: () =>
+          toast.success(next ? "Chapitre publié" : "Chapitre verrouillé", {
+            description: chapter.title,
+          }),
+        onError: () => toast.error("Action impossible. Réessayez."),
+      },
+    );
+  }
+
   return (
     <div className="px-5 py-4">
       <div className="flex items-center justify-between gap-3">
@@ -197,34 +211,29 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
           </span>
           <StatusPill status={chapter.status} />
         </div>
-        <Button
-          variant={published ? "ghost" : "secondary"}
-          size="sm"
-          disabled={toggleChapter.isPending}
-          onClick={() =>
-            toggleChapter.mutate(
-              { id: chapter.id, status: published ? "LOCKED" : "UNLOCKED" },
-              {
-                onSuccess: () =>
-                  toast.success(
-                    published ? "Chapitre verrouillé" : "Chapitre publié",
-                    { description: chapter.title },
-                  ),
-                onError: () => toast.error("Action impossible. Réessayez."),
-              },
-            )
-          }
-        >
-          {published ? (
-            <>
+        {published ? (
+          // Verrouiller retire l'accès aux élèves → on confirme.
+          <ConfirmDialog
+            title="Verrouiller ce chapitre ?"
+            description="Les élèves n'y auront plus accès jusqu'à un nouveau déblocage."
+            confirmLabel="Verrouiller"
+            confirmVariant="danger"
+            onConfirm={() => setPublished(false)}
+          >
+            <Button variant="ghost" size="sm" disabled={toggleChapter.isPending}>
               <Lock className="h-4 w-4" /> Verrouiller
-            </>
-          ) : (
-            <>
-              <LockOpen className="h-4 w-4" /> Publier
-            </>
-          )}
-        </Button>
+            </Button>
+          </ConfirmDialog>
+        ) : (
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={toggleChapter.isPending}
+            onClick={() => setPublished(true)}
+          >
+            <LockOpen className="h-4 w-4" /> Publier
+          </Button>
+        )}
       </div>
 
       {/* Ressources du chapitre */}
