@@ -107,6 +107,28 @@ export async function createResource(input: {
   return data as ResourceItem;
 }
 
+/** Toutes les ressources visibles par le prof (cours + ses ressources autonomes). */
+export async function fetchResources(): Promise<ResourceItem[]> {
+  const { data } = await api.get("/pcs/resources/");
+  return unwrapList<ResourceItem>(data);
+}
+
+/** Partage une ressource AUTONOME (hors cours) ciblant une classe, publiée d'emblée. */
+export async function createStandaloneResource(input: {
+  classroom: string;
+  title: string;
+  type: ResourceType;
+  category: ResourceCategory;
+  url: string;
+}): Promise<ResourceItem> {
+  const { data } = await api.post("/pcs/resources/", {
+    ...input,
+    status: "UNLOCKED",
+    target_audiences: ["STUDENT"],
+  });
+  return data as ResourceItem;
+}
+
 export async function updateResourceStatus(
   id: string,
   status: ResourceStatus,

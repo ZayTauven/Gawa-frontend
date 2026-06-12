@@ -5,6 +5,7 @@ import {
   fetchCourses,
   fetchMyProfile,
   fetchQuizzes,
+  fetchResources,
 } from "./api";
 
 export const studentKeys = {
@@ -13,6 +14,7 @@ export const studentKeys = {
   chapters: ["student", "chapters"] as const,
   quizzes: ["student", "quizzes"] as const,
   attempts: ["student", "attempts"] as const,
+  resources: ["student", "resources"] as const,
 };
 
 export function useMyProfile() {
@@ -33,4 +35,8 @@ export function useQuizzes() {
 
 export function useAttempts() {
   return useQuery({ queryKey: studentKeys.attempts, queryFn: fetchAttempts });
+}
+
+export function useResources() {
+  return useQuery({ queryKey: studentKeys.resources, queryFn: fetchResources });
 }

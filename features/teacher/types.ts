@@ -38,8 +38,13 @@ export type ResourceCategory =
 
 export interface ResourceItem {
   id: string;
-  chapter: string;
-  chapter_title: string;
+  /** null pour une ressource autonome (partagée hors cours). */
+  chapter: string | null;
+  chapter_title: string | null;
+  /** Classe cible d'une ressource autonome (null pour une ressource de cours). */
+  classroom: string | null;
+  /** Auteur (créateur) de la ressource. */
+  author: string | null;
   title: string;
   type: ResourceType;
   category: ResourceCategory;

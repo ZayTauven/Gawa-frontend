@@ -8,12 +8,8 @@ import { FilterPill } from "@/components/ui/FilterPill";
 import { CertifBadge } from "@/components/ui/CertifBadge";
 import { Hibou } from "@/components/ui/Hibou";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
-import { useChapters } from "@/features/student/hooks";
-import type {
-  Resource,
-  ResourceCategory,
-  ResourceType,
-} from "@/features/student/types";
+import { useResources } from "@/features/student/hooks";
+import type { ResourceCategory, ResourceType } from "@/features/student/types";
 
 const TYPE_META: Record<ResourceType, { label: string; Icon: typeof FileText }> = {
   PDF: { label: "PDF", Icon: FileText },
@@ -37,26 +33,14 @@ const CATEGORY_FILTERS: ResourceCategory[] = [
   "APPROFONDISSEMENT",
 ];
 
-type LibraryResource = Resource & { courseTitle: string; chapterTitle: string };
-
 export default function StudentResourcesPage() {
-  const chapters = useChapters();
+  // Bibliothèque déjà cloisonnée côté serveur (classe + publiées + audience élève).
+  const resources = useResources();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<ResourceCategory | "ALL">("ALL");
   const [certifiedOnly, setCertifiedOnly] = useState(false);
 
-  // Bibliothèque = ressources débloquées des chapitres débloqués (visibles à l'élève).
-  const all = useMemo<LibraryResource[]>(() => {
-    const out: LibraryResource[] = [];
-    for (const ch of chapters.data ?? []) {
-      if (ch.status !== "UNLOCKED") continue;
-      for (const r of ch.resources) {
-        if (r.status !== "UNLOCKED") continue;
-        out.push({ ...r, courseTitle: ch.course_title, chapterTitle: ch.title });
-      }
-    }
-    return out;
-  }, [chapters.data]);
+  const all = useMemo(() => resources.data ?? [], [resources.data]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -66,18 +50,18 @@ export default function StudentResourcesPage() {
         (!certifiedOnly || r.ai_eligible) &&
         (!q ||
           r.title.toLowerCase().includes(q) ||
-          r.courseTitle.toLowerCase().includes(q)),
+          (r.chapter_title ?? "").toLowerCase().includes(q)),
     );
   }, [all, query, category, certifiedOnly]);
 
   const certifiedCount = useMemo(() => all.filter((r) => r.ai_eligible).length, [all]);
 
-  if (chapters.isLoading) return <Spinner label="Chargement des ressources…" />;
-  if (chapters.isError)
+  if (resources.isLoading) return <Spinner label="Chargement des ressources…" />;
+  if (resources.isError)
     return (
       <ErrorState
         message="Impossible de charger les ressources."
-        onRetry={() => chapters.refetch()}
+        onRetry={() => resources.refetch()}
       />
     );
 
@@ -151,7 +135,7 @@ export default function StudentResourcesPage() {
                     {r.ai_eligible && <CertifBadge small />}
                   </div>
                   <p className="mt-0.5 truncate text-xs text-ink/50">
-                    {r.courseTitle} · {r.chapterTitle} · {label}
+                    {r.chapter_title ?? "Ressource partagée"} · {label}
                   </p>
                 </div>
                 {r.url && (

@@ -21,7 +21,8 @@ export type ResourceCategory =
 
 export interface Resource {
   id: string;
-  chapter: string;
+  chapter: string | null;
+  chapter_title: string | null;
   title: string;
   type: ResourceType;
   category: ResourceCategory;

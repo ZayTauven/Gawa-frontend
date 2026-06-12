@@ -5,11 +5,13 @@ import {
   createChapter,
   createCourse,
   createResource,
+  createStandaloneResource,
   deleteAttendance,
   fetchAttendance,
   fetchChapters,
   fetchClassrooms,
   fetchCourses,
+  fetchResources,
   updateAttendance,
   updateChapterStatus,
   updateResourceCertification,
@@ -27,6 +29,7 @@ export const teacherKeys = {
   attendance: ["teacher", "attendance"] as const,
   courses: ["teacher", "courses"] as const,
   chapters: ["teacher", "chapters"] as const,
+  resources: ["teacher", "resources"] as const,
 };
 
 export function useClassrooms() {
@@ -92,7 +95,10 @@ export function useToggleResource() {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: ResourceStatus }) =>
       updateResourceStatus(id, status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: teacherKeys.chapters }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: teacherKeys.chapters });
+      qc.invalidateQueries({ queryKey: teacherKeys.resources });
+    },
   });
 }
 
@@ -101,7 +107,23 @@ export function useCertifyResource() {
   return useMutation({
     mutationFn: ({ id, aiEligible }: { id: string; aiEligible: boolean }) =>
       updateResourceCertification(id, aiEligible),
-    onSuccess: () => qc.invalidateQueries({ queryKey: teacherKeys.chapters }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: teacherKeys.chapters });
+      qc.invalidateQueries({ queryKey: teacherKeys.resources });
+    },
+  });
+}
+
+/** Ressources autonomes (hors cours) que le prof a partagées. */
+export function useResources() {
+  return useQuery({ queryKey: teacherKeys.resources, queryFn: fetchResources });
+}
+
+export function useCreateStandaloneResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: createStandaloneResource,
+    onSuccess: () => qc.invalidateQueries({ queryKey: teacherKeys.resources }),
   });
 }
 
