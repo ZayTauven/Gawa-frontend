@@ -12,6 +12,7 @@ import {
   fetchCourses,
   updateAttendance,
   updateChapterStatus,
+  updateResourceCertification,
   updateResourceStatus,
 } from "./api";
 import type {
@@ -91,6 +92,15 @@ export function useToggleResource() {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: ResourceStatus }) =>
       updateResourceStatus(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: teacherKeys.chapters }),
+  });
+}
+
+export function useCertifyResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, aiEligible }: { id: string; aiEligible: boolean }) =>
+      updateResourceCertification(id, aiEligible),
     onSuccess: () => qc.invalidateQueries({ queryKey: teacherKeys.chapters }),
   });
 }

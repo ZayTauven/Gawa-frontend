@@ -45,6 +45,7 @@ const ROLE_NAV: Record<UiRole, NavItem[]> = {
   student: [
     { label: "Tableau de bord", href: "/dashboard/student", icon: "LayoutDashboard" },
     { label: "Mes cours", href: "/dashboard/student/courses", icon: "BookOpen" },
+    { label: "Ressources", href: "/dashboard/student/resources", icon: "FolderOpen" },
     { label: "Examens", href: "/dashboard/student/exams", icon: "GraduationCap" },
   ],
   parent: [

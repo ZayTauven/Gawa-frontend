@@ -7,10 +7,12 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { TextInput, Select } from "@/components/ui/Field";
+import { CertifBadge } from "@/components/ui/CertifBadge";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
 import { toast } from "@/components/ui/Toast";
 import { StatusPill } from "@/features/teacher/StatusPill";
 import {
+  useCertifyResource,
   useChapters,
   useCourses,
   useCreateChapter,
@@ -19,7 +21,20 @@ import {
   useToggleChapter,
   useToggleResource,
 } from "@/features/teacher/hooks";
-import type { Chapter, Course, ResourceType } from "@/features/teacher/types";
+import type {
+  Chapter,
+  Course,
+  ResourceCategory,
+  ResourceType,
+} from "@/features/teacher/types";
+
+const CATEGORY_LABELS: Record<ResourceCategory, string> = {
+  ANNALES: "Annales",
+  CORRECTION: "Corrigé",
+  NOTES: "Notes de cours",
+  APPROFONDISSEMENT: "Approfondissement",
+  OTHER: "Autre",
+};
 
 export default function TeacherResourcesPage() {
   const courses = useCourses();
@@ -180,10 +195,12 @@ function CourseBlock({
 function ChapterRow({ chapter }: { chapter: Chapter }) {
   const toggleChapter = useToggleChapter();
   const toggleResource = useToggleResource();
+  const certifyResource = useCertifyResource();
   const createResource = useCreateResource();
 
   const [resTitle, setResTitle] = useState("");
   const [resType, setResType] = useState<ResourceType>("PDF");
+  const [resCategory, setResCategory] = useState<ResourceCategory>("NOTES");
   const [resUrl, setResUrl] = useState("");
   const [showForm, setShowForm] = useState(false);
 
@@ -246,32 +263,66 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
                 key={res.id}
                 className="flex items-center justify-between gap-3 rounded-lg bg-soft px-3 py-2"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 items-center gap-2">
                   <span className="rounded bg-white px-1.5 py-0.5 text-[10px] font-bold text-ink/50 ring-1 ring-line">
                     {res.type}
                   </span>
-                  <span className="text-sm text-ink">{res.title}</span>
+                  <span className="rounded-full bg-mint px-2 py-0.5 text-[10px] font-semibold text-forest">
+                    {CATEGORY_LABELS[res.category]}
+                  </span>
+                  <span className="truncate text-sm text-ink">{res.title}</span>
                   <StatusPill status={res.status} />
+                  {res.ai_eligible && <CertifBadge small />}
                 </div>
-                <button
-                  onClick={() =>
-                    toggleResource.mutate(
-                      { id: res.id, status: resPublished ? "LOCKED" : "UNLOCKED" },
-                      {
-                        onSuccess: () =>
-                          toast.success(
-                            resPublished ? "Ressource verrouillée" : "Ressource publiée",
-                            { description: res.title },
-                          ),
-                        onError: () => toast.error("Action impossible. Réessayez."),
-                      },
-                    )
-                  }
-                  disabled={toggleResource.isPending}
-                  className="text-xs font-semibold text-forest underline disabled:opacity-50"
-                >
-                  {resPublished ? "Verrouiller" : "Publier"}
-                </button>
+                <div className="flex shrink-0 items-center gap-3">
+                  <button
+                    onClick={() =>
+                      certifyResource.mutate(
+                        { id: res.id, aiEligible: !res.ai_eligible },
+                        {
+                          onSuccess: () =>
+                            toast.success(
+                              res.ai_eligible
+                                ? "Certification retirée"
+                                : "Ressource certifiée",
+                              {
+                                description: res.ai_eligible
+                                  ? res.title
+                                  : "Elle pourra entraîner Prof Hibou.",
+                              },
+                            ),
+                          onError: () =>
+                            toast.error("Certification impossible", {
+                              description: "Seules les ressources pédagogiques sont éligibles.",
+                            }),
+                        },
+                      )
+                    }
+                    disabled={certifyResource.isPending}
+                    className="text-xs font-semibold text-ink/50 underline hover:text-forest disabled:opacity-50"
+                  >
+                    {res.ai_eligible ? "Retirer certif." : "Certifier"}
+                  </button>
+                  <button
+                    onClick={() =>
+                      toggleResource.mutate(
+                        { id: res.id, status: resPublished ? "LOCKED" : "UNLOCKED" },
+                        {
+                          onSuccess: () =>
+                            toast.success(
+                              resPublished ? "Ressource verrouillée" : "Ressource publiée",
+                              { description: res.title },
+                            ),
+                          onError: () => toast.error("Action impossible. Réessayez."),
+                        },
+                      )
+                    }
+                    disabled={toggleResource.isPending}
+                    className="text-xs font-semibold text-forest underline disabled:opacity-50"
+                  >
+                    {resPublished ? "Verrouiller" : "Publier"}
+                  </button>
+                </div>
               </li>
             );
           })}
@@ -286,7 +337,13 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
             const t = resTitle.trim();
             if (!t) return;
             createResource.mutate(
-              { chapter: chapter.id, title: t, type: resType, url: resUrl.trim() },
+              {
+                chapter: chapter.id,
+                title: t,
+                type: resType,
+                category: resCategory,
+                url: resUrl.trim(),
+              },
               {
                 onSuccess: () => {
                   setResTitle("");
@@ -307,9 +364,18 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
             className="flex-1"
           />
           <Select
+            value={resCategory}
+            onValueChange={(v) => setResCategory(v as ResourceCategory)}
+            className="sm:w-44"
+            options={(Object.keys(CATEGORY_LABELS) as ResourceCategory[]).map((c) => ({
+              value: c,
+              label: CATEGORY_LABELS[c],
+            }))}
+          />
+          <Select
             value={resType}
             onValueChange={(v) => setResType(v as ResourceType)}
-            className="sm:w-36"
+            className="sm:w-32"
             options={[
               { value: "PDF", label: "PDF" },
               { value: "LINK", label: "Lien" },

@@ -6,6 +6,7 @@ import type {
   ChapterStatus,
   Course,
   Classroom,
+  ResourceCategory,
   ResourceItem,
   ResourceStatus,
   ResourceType,
@@ -96,6 +97,7 @@ export async function createResource(input: {
   chapter: string;
   title: string;
   type: ResourceType;
+  category: ResourceCategory;
   url: string;
 }): Promise<ResourceItem> {
   const { data } = await api.post("/pcs/resources/", {
@@ -110,5 +112,14 @@ export async function updateResourceStatus(
   status: ResourceStatus,
 ): Promise<ResourceItem> {
   const { data } = await api.patch(`/pcs/resources/${id}/`, { status });
+  return data as ResourceItem;
+}
+
+/** Certifie (ou retire la certification d') une ressource → champ backend `ai_eligible`. */
+export async function updateResourceCertification(
+  id: string,
+  ai_eligible: boolean,
+): Promise<ResourceItem> {
+  const { data } = await api.patch(`/pcs/resources/${id}/`, { ai_eligible });
   return data as ResourceItem;
 }

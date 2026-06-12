@@ -28,6 +28,13 @@ export interface AttendanceRecord {
 export type ChapterStatus = "DRAFT" | "LOCKED" | "UNLOCKED";
 export type ResourceStatus = "LOCKED" | "UNLOCKED";
 export type ResourceType = "PDF" | "LINK" | "TEXT" | "IMAGE";
+/** Taxonomie pédagogique (champ backend `category`). */
+export type ResourceCategory =
+  | "ANNALES"
+  | "CORRECTION"
+  | "NOTES"
+  | "APPROFONDISSEMENT"
+  | "OTHER";
 
 export interface ResourceItem {
   id: string;
@@ -35,8 +42,11 @@ export interface ResourceItem {
   chapter_title: string;
   title: string;
   type: ResourceType;
+  category: ResourceCategory;
   url: string;
   status: ResourceStatus;
+  /** Ressource certifiée (validée pour entraîner Prof Hibou). Champ backend `ai_eligible`. */
+  ai_eligible: boolean;
   document_class: string;
   target_audiences: string[];
 }

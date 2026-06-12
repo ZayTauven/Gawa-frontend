@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
+  FolderOpen,
   GraduationCap,
   LayoutDashboard,
   NotebookPen,
@@ -25,6 +26,7 @@ const ICONS: Record<string, LucideIcon> = {
   School,
   Wallet,
   BookOpen,
+  FolderOpen,
   GraduationCap,
   NotebookPen,
   ShieldCheck,
