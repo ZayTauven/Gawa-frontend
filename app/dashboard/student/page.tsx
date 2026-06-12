@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { WelcomeBanner } from "@/components/ui/WelcomeBanner";
 import { StickerStat } from "@/components/ui/StickerStat";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
+import { Gauge, ChartStat, BarChart } from "@/components/charts";
 import { useAuthStore } from "@/lib/auth/useAuthStore";
 import {
   useAttempts,
@@ -24,6 +25,10 @@ function frenchDate(): string {
   }).format(new Date());
 }
 
+function shortLabel(t: string): string {
+  return t.length > 11 ? `${t.slice(0, 10)}…` : t;
+}
+
 export default function StudentHome() {
   const user = useAuthStore((s) => s.user);
   const courses = useCourses();
@@ -35,21 +40,62 @@ export default function StudentHome() {
     courses.isLoading || chapters.isLoading || quizzes.isLoading || attempts.isLoading;
   const error = courses.isError || chapters.isError || quizzes.isError || attempts.isError;
 
-  const stats = useMemo(() => {
-    const unlocked = (chapters.data ?? []).filter((c) => c.status === "UNLOCKED").length;
-    const published = (quizzes.data ?? []).filter((q) => q.status === "PUBLISHED").length;
-    const att = attempts.data ?? [];
-    const avg = att.length
-      ? Math.round(att.reduce((s, a) => s + a.score, 0) / att.length)
+  // Toutes les métriques sont DÉRIVÉES des données réelles de l'API.
+  const m = useMemo(() => {
+    const att = [...(attempts.data ?? [])].sort(
+      (a, b) => +new Date(a.completed_at) - +new Date(b.completed_at),
+    );
+    const scores = att.map((a) => a.score);
+    const avg = scores.length
+      ? Math.round(scores.reduce((s, x) => s + x, 0) / scores.length)
       : 0;
+    const delta = scores.length >= 2 ? scores[scores.length - 1] - scores[0] : 0;
+
+    const chs = chapters.data ?? [];
+    const unlocked = chs.filter((c) => c.status === "UNLOCKED").length;
+
+    const publishedQuizzes = (quizzes.data ?? []).filter((q) => q.status === "PUBLISHED");
+
+    // Meilleur score par quiz → barres « Scores par quiz », barre forte = meilleur.
+    const bestByQuiz = new Map<string, number>();
+    for (const a of att) bestByQuiz.set(a.quiz, Math.max(bestByQuiz.get(a.quiz) ?? 0, a.score));
+    const quizTitle = new Map((quizzes.data ?? []).map((q) => [q.id, q.title]));
+    const quizBars = [...bestByQuiz.entries()]
+      .map(([qid, score]) => ({ label: shortLabel(quizTitle.get(qid) ?? "Quiz"), value: score }))
+      .slice(0, 7);
+    const bestIdx = quizBars.reduce((bi, b, i, arr) => (b.value > arr[bi].value ? i : bi), 0);
+
+    // Activité de révision : nb de quiz tentés par jour sur 7 jours (via completed_at).
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const activity = Array.from({ length: 7 }, (_, k) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - k));
+      const next = new Date(d);
+      next.setDate(d.getDate() + 1);
+      const count = att.filter((a) => {
+        const t = new Date(a.completed_at);
+        return t >= d && t < next;
+      }).length;
+      const label = new Intl.DateTimeFormat("fr-FR", { weekday: "short" })
+        .format(d)
+        .replace(".", "");
+      return { label, value: count };
+    });
+
     return {
-      courses: courses.data?.length ?? 0,
-      unlocked,
-      published,
+      scores,
       avg,
-      attempts: att.length,
+      delta,
+      unlocked,
+      attemptCount: att.length,
+      coursesCount: courses.data?.length ?? 0,
+      availableQuizzes: publishedQuizzes.length,
+      quizBars,
+      bestIdx,
+      activity,
     };
-  }, [courses.data, chapters.data, quizzes.data, attempts.data]);
+  }, [attempts.data, chapters.data, quizzes.data, courses.data]);
 
   const name = user?.firstName || user?.email?.split("@")[0] || "Élève";
 
@@ -71,30 +117,70 @@ export default function StudentHome() {
         />
       ) : (
         <div className="space-y-5">
+          {/* Héro + jauge de performance */}
           <div className="grid gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <WelcomeBanner
                 name={name}
                 dateLabel={frenchDate()}
                 subtitle="Révisez vos chapitres débloqués et entraînez-vous avec les quiz."
-                ringValue={stats.avg}
-                ringLabel={`Score moyen sur ${stats.attempts} quiz tenté(s)`}
+                ringValue={m.avg}
+                ringLabel={`Score moyen sur ${m.attemptCount} quiz tenté(s)`}
                 sticker="/stickers/student-hand.png"
               />
             </div>
-            <ResultsCard attempts={attempts.data ?? []} quizzes={quizzes.data ?? []} />
+            <div className="flex flex-col items-center justify-center rounded-card border border-line bg-white p-5 shadow-sm">
+              <h3 className="mb-1 self-start font-heading text-base font-bold text-ink">
+                Performance globale
+              </h3>
+              <Gauge value={m.avg} sub={`${m.attemptCount} quiz tenté(s)`} />
+            </div>
           </div>
 
+          {/* Stats — console (sparkline quand on a une série réelle) */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StickerStat sticker="/stickers/courses.png" value={stats.courses} label="Mes cours" tone="emerald" />
-            <StickerStat sticker="/stickers/chapters.png" value={stats.unlocked} label="Chapitres débloqués" tone="sky" />
-            <StickerStat sticker="/stickers/diploma.png" value={stats.published} label="Quiz disponibles" tone="violet" />
-            <StickerStat sticker="/stickers/bulb.png" value={`${stats.avg}%`} label="Score moyen" tone="orange" />
+            {m.scores.length >= 2 ? (
+              <ChartStat
+                sticker="/stickers/bulb.png"
+                tone="orange"
+                color="var(--color-orange)"
+                value={`${m.avg}%`}
+                label="Score moyen"
+                delta={m.delta > 0 ? `+${m.delta} pts` : undefined}
+                data={m.scores}
+              />
+            ) : (
+              <StickerStat sticker="/stickers/bulb.png" value={`${m.avg}%`} label="Score moyen" tone="orange" />
+            )}
+            <StickerStat sticker="/stickers/courses.png" value={m.coursesCount} label="Mes cours" tone="emerald" />
+            <StickerStat sticker="/stickers/chapters.png" value={m.unlocked} label="Chapitres débloqués" tone="sky" />
+            <StickerStat sticker="/stickers/diploma.png" value={m.availableQuizzes} label="Quiz disponibles" tone="violet" />
           </div>
 
+          {/* Graphes — scores par quiz + activité de révision */}
+          <div className="grid gap-5 lg:grid-cols-3">
+            <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
+              <h3 className="mb-4 font-heading text-base font-bold text-ink">Scores par quiz</h3>
+              {m.quizBars.length === 0 ? (
+                <EmptyState message="Tentez un quiz pour voir vos scores apparaître ici." />
+              ) : (
+                <BarChart data={m.quizBars} highlight={m.bestIdx} unit="%" height={170} />
+              )}
+            </div>
+            <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+              <h3 className="font-heading text-base font-bold text-ink">Activité de révision</h3>
+              <p className="mb-3 text-xs text-ink/50">Quiz tentés · 7 derniers jours</p>
+              <BarChart data={m.activity} unit="" height={150} />
+            </div>
+          </div>
+
+          {/* Cours + résultats + examens */}
           <div className="grid gap-5 lg:grid-cols-3">
             <CoursesPanel courses={courses.data ?? []} />
-            <ExamsLink />
+            <div className="space-y-5">
+              <ResultsCard attempts={attempts.data ?? []} quizzes={quizzes.data ?? []} />
+              <ExamsLink />
+            </div>
           </div>
         </div>
       )}
@@ -121,7 +207,7 @@ function ResultsCard({ attempts, quizzes }: { attempts: Attempt[]; quizzes: Quiz
               </span>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
-                  a.score >= 50 ? "bg-emerald-soft text-forest" : "bg-rose-100 text-rose-600"
+                  a.score >= 50 ? "bg-emerald-soft text-forest" : "bg-rose-soft text-rose"
                 }`}
               >
                 {a.score}%
@@ -150,7 +236,7 @@ function CoursesPanel({ courses }: { courses: Course[] }) {
           {courses.slice(0, 5).map((c) => (
             <li key={c.id} className="flex items-center justify-between py-3">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-mint">
+                <span className="flex h-10 w-10 items-center justify-center rounded-control bg-mint">
                   <BookOpen className="h-5 w-5 text-forest" />
                 </span>
                 <div>
@@ -173,7 +259,7 @@ function ExamsLink() {
       <h3 className="mb-4 font-heading text-base font-bold text-ink">Préparer les examens</h3>
       <Link
         href="/dashboard/student/exams"
-        className="flex items-center gap-3 rounded-lg bg-forest p-4 text-white transition-opacity hover:opacity-95"
+        className="flex items-center gap-3 rounded-control bg-forest p-4 text-white transition-opacity hover:opacity-95"
       >
         <GraduationCap className="h-5 w-5" />
         <span className="text-sm font-semibold">M&apos;entraîner aux quiz</span>

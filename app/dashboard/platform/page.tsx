@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { WelcomeBanner } from "@/components/ui/WelcomeBanner";
 import { StickerStat } from "@/components/ui/StickerStat";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
+import { Gauge, Donut, LegendRow } from "@/components/charts";
 import { useAuthStore } from "@/lib/auth/useAuthStore";
 import {
   useAccessLogs,
@@ -16,7 +17,24 @@ import {
   usePlatformUsers,
   useSchools,
 } from "@/features/platform/hooks";
-import type { AccessLog, School } from "@/features/platform/types";
+import type { AccessLog, Invoice, School } from "@/features/platform/types";
+
+type PayStatus = Invoice["status"];
+const PAY_TONES: Record<PayStatus, { color: string; label: string }> = {
+  PAID: { color: "var(--color-emerald)", label: "Réglées" },
+  PARTIAL: { color: "var(--color-orange)", label: "Partielles" },
+  PENDING: { color: "#94A3B8", label: "En attente" },
+  OVERDUE: { color: "var(--color-rose)", label: "En retard" },
+};
+const PAY_ORDER: PayStatus[] = ["PAID", "PARTIAL", "PENDING", "OVERDUE"];
+
+const LOG_TONES: Record<AccessLog["action_type"], { color: string; label: string }> = {
+  SEAL: { color: "var(--color-emerald)", label: "Scellement" },
+  DECRYPT: { color: "var(--color-orange)", label: "Déchiffrement" },
+  PRINT: { color: "#3B82F6", label: "Impression" },
+  FAILED_ATTEMPT: { color: "var(--color-rose)", label: "Échecs" },
+};
+const LOG_ORDER: AccessLog["action_type"][] = ["SEAL", "DECRYPT", "PRINT", "FAILED_ATTEMPT"];
 
 function frenchDate(): string {
   return new Intl.DateTimeFormat("fr-FR", {
@@ -46,8 +64,22 @@ export default function PlatformHome() {
   const stats = useMemo(() => {
     const schoolList = schools.data ?? [];
     const active = schoolList.filter((s) => s.is_active).length;
-    const overdue = (invoices.data ?? []).filter((i) => i.status === "OVERDUE");
+    const invList = invoices.data ?? [];
+    const overdue = invList.filter((i) => i.status === "OVERDUE");
     const overdueAmount = overdue.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    const paid = invList.filter((i) => i.status === "PAID").length;
+
+    // Répartition paiements réseau (donut) + répartition des accès archives (donut).
+    const payByStatus = PAY_ORDER.map((status) => ({
+      status,
+      count: invList.filter((i) => i.status === status).length,
+    })).filter((s) => s.count > 0);
+    const logList = logs.data ?? [];
+    const logByType = LOG_ORDER.map((type) => ({
+      type,
+      count: logList.filter((l) => l.action_type === type).length,
+    })).filter((s) => s.count > 0);
+
     return {
       schools: schoolList.length,
       activeSchools: active,
@@ -56,8 +88,13 @@ export default function PlatformHome() {
       students: students.data ?? 0,
       overdueCount: overdue.length,
       overdueAmount,
+      recoveryRate: invList.length ? (paid / invList.length) * 100 : 0,
+      payByStatus,
+      payTotal: invList.length || 1,
+      logByType,
+      logTotal: logList.length || 1,
     };
-  }, [schools.data, users.data, students.data, invoices.data]);
+  }, [schools.data, users.data, students.data, invoices.data, logs.data]);
 
   const name = user?.firstName || user?.email?.split("@")[0] || "Pilote";
 
@@ -125,6 +162,42 @@ export default function PlatformHome() {
             />
           </div>
 
+          {/* Bande console : santé réseau */}
+          <div className="grid gap-5 sm:grid-cols-3">
+            <div className="flex flex-col items-center rounded-card border border-line bg-white p-5 shadow-sm">
+              <h3 className="mb-2 self-start font-heading text-base font-bold text-ink">
+                Écoles actives
+              </h3>
+              <Gauge value={stats.activeRate} sub={`${stats.activeSchools}/${stats.schools}`} />
+            </div>
+
+            <DonutPanel
+              title="Paiements réseau"
+              centerLabel={`${Math.round(stats.recoveryRate)}%`}
+              centerSub="réglées"
+              total={stats.payTotal}
+              items={stats.payByStatus.map((s) => ({
+                color: PAY_TONES[s.status].color,
+                label: PAY_TONES[s.status].label,
+                count: s.count,
+              }))}
+              empty="Aucune facture sur le réseau."
+            />
+
+            <DonutPanel
+              title="Accès aux archives"
+              centerLabel={String(stats.logByType.reduce((s, x) => s + x.count, 0))}
+              centerSub="accès"
+              total={stats.logTotal}
+              items={stats.logByType.map((s) => ({
+                color: LOG_TONES[s.type].color,
+                label: LOG_TONES[s.type].label,
+                count: s.count,
+              }))}
+              empty="Aucun accès au coffre-fort."
+            />
+          </div>
+
           <div className="grid gap-5 lg:grid-cols-3">
             <SchoolsPanel schools={schools.data ?? []} />
             <SecurityPanel logs={logs.data ?? []} />
@@ -132,6 +205,45 @@ export default function PlatformHome() {
         </div>
       )}
     </>
+  );
+}
+
+function DonutPanel({
+  title,
+  centerLabel,
+  centerSub,
+  total,
+  items,
+  empty,
+}: {
+  title: string;
+  centerLabel: string;
+  centerSub: string;
+  total: number;
+  items: { color: string; label: string; count: number }[];
+  empty: string;
+}) {
+  return (
+    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+      <h3 className="mb-4 font-heading text-base font-bold text-ink">{title}</h3>
+      {items.length === 0 ? (
+        <EmptyState message={empty} />
+      ) : (
+        <div className="flex items-center gap-4">
+          <Donut
+            segments={items.map((i) => ({ value: (i.count / total) * 100, color: i.color }))}
+            size={104}
+            label={centerLabel}
+            sub={centerSub}
+          />
+          <div className="min-w-0 flex-1">
+            {items.map((i) => (
+              <LegendRow key={i.label} color={i.color} label={i.label} value={i.count} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

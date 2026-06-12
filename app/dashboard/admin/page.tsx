@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { WelcomeBanner } from "@/components/ui/WelcomeBanner";
 import { StickerStat } from "@/components/ui/StickerStat";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
+import { Donut, BarChart, LegendRow } from "@/components/charts";
 import { useAuthStore } from "@/lib/auth/useAuthStore";
 import {
   useClassrooms,
@@ -15,7 +16,16 @@ import {
   useSchoolUsers,
   useStudents,
 } from "@/features/admin/hooks";
-import type { Classroom } from "@/features/admin/types";
+import type { Classroom, Invoice, InvoiceStatus } from "@/features/admin/types";
+
+// Palette sémantique des statuts de facture (kit Craie vive).
+const PAYMENT_TONES: Record<InvoiceStatus, { color: string; label: string }> = {
+  PAID: { color: "var(--color-emerald)", label: "Réglées" },
+  PARTIAL: { color: "var(--color-orange)", label: "Partielles" },
+  PENDING: { color: "#94A3B8", label: "En attente" },
+  OVERDUE: { color: "var(--color-rose)", label: "En retard" },
+};
+const PAYMENT_ORDER: InvoiceStatus[] = ["PAID", "PARTIAL", "PENDING", "OVERDUE"];
 
 function frenchDate(): string {
   return new Intl.DateTimeFormat("fr-FR", {
@@ -43,6 +53,17 @@ export default function AdminHome() {
     const overdue = invList.filter((i) => i.status === "OVERDUE");
     const overdueAmount = overdue.reduce((s, i) => s + Number(i.amount || 0), 0);
     const teachers = (users.data ?? []).filter((u) => u.role === "TEACHER").length;
+
+    // Répartition par statut → donut des paiements.
+    const byStatus = PAYMENT_ORDER.map((status) => ({
+      status,
+      count: invList.filter((i) => i.status === status).length,
+    })).filter((s) => s.count > 0);
+    const totalInv = invList.length || 1;
+
+    // Collecte des frais : somme encaissée (factures réglées) par mois, via due_date.
+    const collecte = collectByMonth(invList);
+
     return {
       students: students.data?.length ?? 0,
       classes: classrooms.data?.length ?? 0,
@@ -51,6 +72,9 @@ export default function AdminHome() {
       overdueAmount,
       recoveryRate: invList.length ? (paid / invList.length) * 100 : 0,
       invoiceTotal: invList.length,
+      byStatus,
+      totalInv,
+      collecte,
     };
   }, [students.data, classrooms.data, invoices.data, users.data]);
 
@@ -85,7 +109,12 @@ export default function AdminHome() {
                 sticker="/stickers/diploma.png"
               />
             </div>
-            <FinanceCard count={stats.overdueCount} amount={stats.overdueAmount} />
+            <PaymentsCard
+              byStatus={stats.byStatus}
+              total={stats.totalInv}
+              recoveryRate={stats.recoveryRate}
+              overdueAmount={stats.overdueAmount}
+            />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -93,6 +122,23 @@ export default function AdminHome() {
             <StickerStat sticker="/stickers/classes.png" value={stats.classes} label="Classes" tone="sky" />
             <StickerStat sticker="/stickers/prof.png" value={stats.teachers} label="Enseignants" tone="violet" />
             <StickerStat icon={<Wallet className="h-7 w-7 text-orange" />} value={stats.overdueCount} label="Factures en retard" tone="orange" />
+          </div>
+
+          {/* Collecte des frais par mois */}
+          <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+            <h3 className="font-heading text-base font-bold text-ink">Collecte des frais</h3>
+            <p className="mb-3 text-xs text-ink/50">Montant encaissé par mois (factures réglées)</p>
+            {stats.collecte.length === 0 ? (
+              <EmptyState message="Aucun encaissement enregistré pour l'instant." />
+            ) : (
+              <BarChart
+                data={stats.collecte}
+                color="var(--color-emerald)"
+                highlight={stats.collecte.length - 1}
+                unit=" KMF"
+                height={170}
+              />
+            )}
           </div>
 
           <div className="grid gap-5 lg:grid-cols-3">
@@ -105,25 +151,86 @@ export default function AdminHome() {
   );
 }
 
-function FinanceCard({ count, amount }: { count: number; amount: number }) {
+/** Regroupe le montant encaissé (factures réglées) par mois, via due_date. */
+function collectByMonth(invoices: Invoice[]): { label: string; value: number }[] {
+  const sums = new Map<string, number>();
+  for (const inv of invoices) {
+    if (inv.status !== "PAID" || !inv.due_date) continue;
+    const d = new Date(inv.due_date);
+    if (Number.isNaN(+d)) continue;
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    sums.set(key, (sums.get(key) ?? 0) + Number(inv.amount || 0));
+  }
+  return [...sums.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-6)
+    .map(([key, value]) => {
+      const [y, mo] = key.split("-").map(Number);
+      const label = new Intl.DateTimeFormat("fr-FR", { month: "short" })
+        .format(new Date(y, mo - 1, 1))
+        .replace(".", "");
+      return { label, value: Math.round(value) };
+    });
+}
+
+function PaymentsCard({
+  byStatus,
+  total,
+  recoveryRate,
+  overdueAmount,
+}: {
+  byStatus: { status: InvoiceStatus; count: number }[];
+  total: number;
+  recoveryRate: number;
+  overdueAmount: number;
+}) {
+  const segments = byStatus.map((s) => ({
+    value: (s.count / total) * 100,
+    color: PAYMENT_TONES[s.status].color,
+  }));
+
   return (
     <div className="rounded-card border border-line bg-white p-5 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-heading text-base font-bold text-ink">Finances</h3>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="font-heading text-base font-bold text-ink">État des paiements</h3>
         <Wallet className="h-5 w-5 text-orange" />
       </div>
-      <p className="font-heading text-3xl font-extrabold text-orange">{count}</p>
-      <p className="text-sm text-ink/60">facture(s) en retard</p>
-      <div className="mt-4 rounded-lg bg-orange-soft px-4 py-3">
-        <p className="text-xs text-ink/50">Montant impayé</p>
-        <p className="font-bold text-ink">{amount.toLocaleString("fr-FR")} KMF</p>
-      </div>
-      <Link
-        href="/dashboard/admin/finance"
-        className="mt-3 inline-block text-sm font-semibold text-forest hover:underline"
-      >
-        Voir les factures →
-      </Link>
+      {byStatus.length === 0 ? (
+        <EmptyState message="Aucune facture émise." />
+      ) : (
+        <>
+          <div className="flex items-center gap-4">
+            <Donut
+              segments={segments}
+              size={104}
+              label={`${Math.round(recoveryRate)}%`}
+              sub="réglées"
+            />
+            <div className="min-w-0 flex-1">
+              {byStatus.map((s) => (
+                <LegendRow
+                  key={s.status}
+                  color={PAYMENT_TONES[s.status].color}
+                  label={PAYMENT_TONES[s.status].label}
+                  value={s.count}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 flex items-center justify-between rounded-control bg-orange-soft px-4 py-3">
+            <div>
+              <p className="text-xs text-ink/50">Montant impayé</p>
+              <p className="font-bold text-ink">{overdueAmount.toLocaleString("fr-FR")} KMF</p>
+            </div>
+            <Link
+              href="/dashboard/admin/finance"
+              className="text-sm font-semibold text-forest hover:underline"
+            >
+              Détail →
+            </Link>
+          </div>
+        </>
+      )}
     </div>
   );
 }

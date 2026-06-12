@@ -7,9 +7,14 @@ import { ArrowRight, BookOpen, Users, WifiOff } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { WelcomeBanner } from "@/components/ui/WelcomeBanner";
 import { StickerStat } from "@/components/ui/StickerStat";
-import { Spinner, ErrorState } from "@/components/ui/States";
+import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
+import { Donut, BarChart, LegendRow } from "@/components/charts";
 import { useAuthStore } from "@/lib/auth/useAuthStore";
 import { todayKey, dayKey } from "@/lib/utils/date";
+
+function shortLabel(t: string): string {
+  return t.length > 11 ? `${t.slice(0, 10)}…` : t;
+}
 import {
   useAttendance,
   useChapters,
@@ -63,6 +68,18 @@ export default function TeacherHome() {
         ? (publishedChapters / chapterList.length) * 100
         : 0;
 
+    // Statut du jour par élève → taux de présence par classe (dérivé de l'appel).
+    const statusByStudent = new Map(todayRecords.map((a) => [a.student, a.status]));
+    const byClass = classList.map((c) => {
+      const total = c.student_count ?? c.students.length;
+      const bad = c.students.filter((s) => {
+        const st = statusByStudent.get(s.id);
+        return st === "ABSENT" || st === "LATE";
+      }).length;
+      const rate = total > 0 ? Math.round(((total - bad) / total) * 100) : 100;
+      return { label: shortLabel(c.name), value: rate };
+    });
+
     return {
       classes: classList.length,
       students: studentTotal,
@@ -74,6 +91,7 @@ export default function TeacherHome() {
       absent,
       presenceRate,
       publishRate,
+      byClass,
     };
   }, [classrooms.data, courses.data, chapters.data, attendance.data]);
 
@@ -114,6 +132,7 @@ export default function TeacherHome() {
               late={stats.late}
               absent={stats.absent}
               total={stats.students}
+              rate={stats.presenceRate}
             />
           </div>
 
@@ -145,7 +164,29 @@ export default function TeacherHome() {
             />
           </div>
 
-          {/* Rangée C : classes + raccourcis */}
+          {/* Rangée C : présence par classe */}
+          <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+            <h3 className="font-heading text-base font-bold text-ink">
+              Taux de présence par classe
+            </h3>
+            <p className="mb-3 text-xs text-ink/50">Aujourd&apos;hui · part d&apos;élèves présents</p>
+            {stats.byClass.length === 0 ? (
+              <EmptyState message="Aucune classe à afficher." />
+            ) : (
+              <BarChart
+                data={stats.byClass}
+                color="var(--color-emerald)"
+                highlight={stats.byClass.reduce(
+                  (bi, b, i, arr) => (b.value > arr[bi].value ? i : bi),
+                  0,
+                )}
+                unit="%"
+                height={160}
+              />
+            )}
+          </div>
+
+          {/* Rangée D : classes + raccourcis */}
           <div className="grid gap-5 lg:grid-cols-3">
             <MyClasses
               classes={(classrooms.data ?? []).map((c) => ({
@@ -168,18 +209,21 @@ function PresenceCard({
   late,
   absent,
   total,
+  rate,
 }: {
   present: number;
   late: number;
   absent: number;
   total: number;
+  rate: number;
 }) {
-  const rows = [
-    { label: "Présents", value: present, color: "bg-emerald", text: "text-emerald" },
-    { label: "Retards", value: late, color: "bg-orange", text: "text-orange" },
-    { label: "Absents", value: absent, color: "bg-rose-500", text: "text-rose-500" },
-  ];
   const safeTotal = total || 1;
+  const pct = (v: number) => (v / safeTotal) * 100;
+  const segments = [
+    { value: pct(present), color: "var(--color-emerald)" },
+    { value: pct(late), color: "var(--color-orange)" },
+    { value: pct(absent), color: "var(--color-rose)" },
+  ];
 
   return (
     <div className="rounded-card border border-line bg-white p-5 shadow-sm">
@@ -189,21 +233,18 @@ function PresenceCard({
         </h3>
         <Image src="/stickers/attendance.png" alt="" width={32} height={32} />
       </div>
-      <div className="space-y-3">
-        {rows.map((row) => (
-          <div key={row.label}>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-ink/60">{row.label}</span>
-              <span className={`font-bold ${row.text}`}>{row.value}</span>
-            </div>
-            <div className="mt-1 h-2 overflow-hidden rounded-full bg-soft">
-              <div
-                className={`h-full rounded-full ${row.color}`}
-                style={{ width: `${(row.value / safeTotal) * 100}%` }}
-              />
-            </div>
-          </div>
-        ))}
+      <div className="flex items-center gap-4">
+        <Donut
+          segments={segments}
+          size={104}
+          label={`${Math.round(rate)}%`}
+          sub="présents"
+        />
+        <div className="min-w-0 flex-1">
+          <LegendRow color="var(--color-emerald)" label="Présents" value={present} />
+          <LegendRow color="var(--color-orange)" label="Retards" value={late} />
+          <LegendRow color="var(--color-rose)" label="Absents" value={absent} />
+        </div>
       </div>
     </div>
   );
