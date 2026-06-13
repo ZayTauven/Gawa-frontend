@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 
 /** Marque Gawa compacte pour le web-admin (pastille hibou + wordmark). */
 export function Logo({

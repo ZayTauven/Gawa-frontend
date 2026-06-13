@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { setAuthFailureHandler } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/auth/useAuthStore";
 import { Toaster } from "@/components/ui/Toast";
-import { TooltipProvider } from "@/components/ui/Tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(

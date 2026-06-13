@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import { Lock, LockOpen, Plus, Share2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { ConfirmDialog } from "@/components/ui/Dialog";
-import { TextInput, Select } from "@/components/ui/Field";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { TextInput, Select } from "@/components/ui/form-field";
 import { CertifBadge } from "@/components/ui/CertifBadge";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
 import { toast } from "@/components/ui/Toast";
@@ -147,7 +147,7 @@ export default function TeacherResourcesPage() {
       {courseList.length === 0 ? (
         <EmptyState message="Vous n'avez pas encore de cours. Créez-en un ci-dessus." />
       ) : (
-        <div className="space-y-5">
+        <div className="rise-stagger space-y-5">
           {courseList.map((course) => (
             <CourseBlock
               key={course.id}
@@ -303,8 +303,11 @@ function StandaloneResources({ rooms }: { rooms: Classroom[] }) {
                   <StatusPill status={res.status} />
                   {res.ai_eligible && <CertifBadge small />}
                 </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  <button
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="text-ink/50 hover:text-forest"
                     onClick={() =>
                       certify.mutate(
                         { id: res.id, aiEligible: !res.ai_eligible },
@@ -318,11 +321,13 @@ function StandaloneResources({ rooms }: { rooms: Classroom[] }) {
                       )
                     }
                     disabled={certify.isPending}
-                    className="text-xs font-semibold text-ink/50 underline hover:text-forest disabled:opacity-50"
                   >
                     {res.ai_eligible ? "Retirer certif." : "Certifier"}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="text-forest"
                     onClick={() =>
                       toggle.mutate(
                         { id: res.id, status: published ? "LOCKED" : "UNLOCKED" },
@@ -334,10 +339,9 @@ function StandaloneResources({ rooms }: { rooms: Classroom[] }) {
                       )
                     }
                     disabled={toggle.isPending}
-                    className="text-xs font-semibold text-forest underline disabled:opacity-50"
                   >
                     {published ? "Masquer" : "Publier"}
-                  </button>
+                  </Button>
                 </div>
               </li>
             );
@@ -503,8 +507,11 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
                   <StatusPill status={res.status} />
                   {res.ai_eligible && <CertifBadge small />}
                 </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  <button
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="text-ink/50 hover:text-forest"
                     onClick={() =>
                       certifyResource.mutate(
                         { id: res.id, aiEligible: !res.ai_eligible },
@@ -528,11 +535,13 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
                       )
                     }
                     disabled={certifyResource.isPending}
-                    className="text-xs font-semibold text-ink/50 underline hover:text-forest disabled:opacity-50"
                   >
                     {res.ai_eligible ? "Retirer certif." : "Certifier"}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="text-forest"
                     onClick={() =>
                       toggleResource.mutate(
                         { id: res.id, status: resPublished ? "LOCKED" : "UNLOCKED" },
@@ -547,10 +556,9 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
                       )
                     }
                     disabled={toggleResource.isPending}
-                    className="text-xs font-semibold text-forest underline disabled:opacity-50"
                   >
                     {resPublished ? "Verrouiller" : "Publier"}
-                  </button>
+                  </Button>
                 </div>
               </li>
             );
@@ -623,12 +631,14 @@ function ChapterRow({ chapter }: { chapter: Chapter }) {
           </Button>
         </form>
       ) : (
-        <button
+        <Button
+          variant="ghost"
+          size="xs"
+          className="mt-3 text-ink/50 hover:text-forest"
           onClick={() => setShowForm(true)}
-          className="mt-3 flex items-center gap-1 text-xs font-semibold text-ink/50 hover:text-forest"
         >
-          <Plus className="h-3.5 w-3.5" /> Ajouter une ressource
-        </button>
+          <Plus /> Ajouter une ressource
+        </Button>
       )}
     </div>
   );

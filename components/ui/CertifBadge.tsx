@@ -1,5 +1,5 @@
 import { BadgeCheck } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 
 /**
  * Étiquette « Certifiée » — réservée aux ressources (corrections, annales) validées

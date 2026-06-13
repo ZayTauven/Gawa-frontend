@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { NotebookPen } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { FilterPill } from "@/components/ui/FilterPill";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
-import { cn } from "@/lib/utils/cn";
 import { useCarnet, useChildren } from "@/features/parent/hooks";
 
 export default function ParentCarnetPage() {
@@ -30,18 +30,14 @@ export default function ParentCarnetPage() {
           {list.length > 1 && (
             <div className="mb-4 flex flex-wrap gap-2">
               {list.map((c) => (
-                <button
+                <FilterPill
                   key={c.id}
+                  active={c.id === activeId}
                   onClick={() => setSelectedId(c.id)}
-                  className={cn(
-                    "rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
-                    c.id === activeId
-                      ? "bg-forest text-white"
-                      : "bg-white text-ink/70 ring-1 ring-line hover:bg-soft",
-                  )}
+                  className="px-4 py-2 text-sm"
                 >
                   {c.first_name} {c.last_name}
-                </button>
+                </FilterPill>
               ))}
             </div>
           )}
@@ -55,7 +51,7 @@ export default function ParentCarnetPage() {
           ) : (
             <ul className="space-y-3">
               {(carnet.data ?? []).map((note) => (
-                <li key={note.id} className="rounded-card border border-line bg-white p-5 shadow-sm">
+                <li key={note.id} className="rounded-card border border-line bg-white p-5 shadow-card">
                   <div className="flex items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-mint">
                       <NotebookPen className="h-5 w-5 text-forest" />

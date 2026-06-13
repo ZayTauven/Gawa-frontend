@@ -150,7 +150,7 @@ export default function AdminHome() {
           }}
         />
       ) : (
-        <div className="space-y-5">
+        <div className="rise-stagger space-y-5">
           <div className="grid gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <WelcomeBanner
@@ -179,7 +179,7 @@ export default function AdminHome() {
 
           {/* Bande décisionnelle : présence opérationnelle + progrès pédagogique */}
           <div className="grid gap-5 lg:grid-cols-2">
-            <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+            <div className="rounded-card border border-line bg-white p-5 shadow-card">
               <h3 className="font-heading text-base font-bold text-ink">
                 Taux de présence par classe
               </h3>
@@ -202,7 +202,7 @@ export default function AdminHome() {
               )}
             </div>
 
-            <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+            <div className="rounded-card border border-line bg-white p-5 shadow-card">
               <h3 className="font-heading text-base font-bold text-ink">
                 Évolution des progrès
               </h3>
@@ -250,7 +250,7 @@ function PaymentsCard({
   }));
 
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">État des paiements</h3>
         <Wallet className="h-5 w-5 text-orange" />
@@ -297,7 +297,7 @@ function PaymentsCard({
 
 function ClassesPanel({ classes }: { classes: Classroom[] }) {
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Classes</h3>
         <Link
@@ -340,7 +340,7 @@ function QuickLinks() {
     { href: "/dashboard/admin/finance", label: "Suivi des paiements", sticker: "/stickers/attendance.png" },
   ];
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card">
       <h3 className="mb-4 font-heading text-base font-bold text-ink">Accès rapides</h3>
       <div className="space-y-3">
         {links.map((l) => (

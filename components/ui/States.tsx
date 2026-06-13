@@ -1,11 +1,42 @@
-import { Loader2, WifiOff } from "lucide-react";
+import { WifiOff } from "lucide-react";
+import { Skeleton } from "./skeleton";
 import { Hibou } from "./Hibou";
 
+// Réexport : source unique du squelette = ui/skeleton.tsx (shimmer Gawa).
+export { Skeleton };
+
+/**
+ * Chargement premium : squelette aux formes des dashboards (bannière, cartes,
+ * lignes) plutôt qu'un spinner. Le libellé reste annoncé aux lecteurs d'écran.
+ */
 export function Spinner({ label = "Chargement…" }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center gap-2 py-12 text-ink/50">
-      <Loader2 className="h-5 w-5 animate-spin" />
-      <span className="text-sm">{label}</span>
+    <div role="status" aria-live="polite" className="space-y-5">
+      <span className="sr-only">{label}</span>
+      <div className="grid gap-5 lg:grid-cols-3">
+        <Skeleton className="h-36 rounded-card lg:col-span-2" />
+        <Skeleton className="hidden h-36 rounded-card lg:block" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-4 rounded-card border border-line bg-white p-4 shadow-card"
+          >
+            <Skeleton className="h-14 w-14 shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-5 w-12" />
+              <Skeleton className="h-3.5 w-24" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="space-y-3 rounded-card border border-line bg-white p-5 shadow-card">
+        <Skeleton className="h-4 w-40" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-10" />
+        ))}
+      </div>
     </div>
   );
 }

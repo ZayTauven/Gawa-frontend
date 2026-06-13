@@ -114,7 +114,7 @@ export default function TeacherHome() {
           }}
         />
       ) : (
-        <div className="space-y-5">
+        <div className="rise-stagger space-y-5">
           {/* Rangée A : bienvenue + présences du jour */}
           <div className="grid gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
@@ -165,7 +165,7 @@ export default function TeacherHome() {
           </div>
 
           {/* Rangée C : présence par classe */}
-          <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+          <div className="rounded-card border border-line bg-white p-5 shadow-card">
             <h3 className="font-heading text-base font-bold text-ink">
               Taux de présence par classe
             </h3>
@@ -226,7 +226,7 @@ function PresenceCard({
   ];
 
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">
           Présences aujourd&apos;hui
@@ -256,7 +256,7 @@ function MyClasses({
   classes: { id: string; name: string; year: string; count: number }[];
 }) {
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Mes classes</h3>
         <Link
@@ -305,7 +305,7 @@ function MyClasses({
 
 function Shortcuts() {
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card">
       <h3 className="mb-4 font-heading text-base font-bold text-ink">Raccourcis</h3>
       <div className="space-y-3">
         <Link

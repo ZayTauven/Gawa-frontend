@@ -119,7 +119,7 @@ export default function PlatformHome() {
           }}
         />
       ) : (
-        <div className="space-y-5">
+        <div className="rise-stagger space-y-5">
           <div className="grid gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <WelcomeBanner
@@ -164,7 +164,7 @@ export default function PlatformHome() {
 
           {/* Bande console : santé réseau */}
           <div className="grid gap-5 sm:grid-cols-3">
-            <div className="flex flex-col items-center rounded-card border border-line bg-white p-5 shadow-sm">
+            <div className="flex flex-col items-center rounded-card border border-line bg-white p-5 shadow-card">
               <h3 className="mb-2 self-start font-heading text-base font-bold text-ink">
                 Écoles actives
               </h3>
@@ -224,7 +224,7 @@ function DonutPanel({
   empty: string;
 }) {
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card">
       <h3 className="mb-4 font-heading text-base font-bold text-ink">{title}</h3>
       {items.length === 0 ? (
         <EmptyState message={empty} />
@@ -249,7 +249,7 @@ function DonutPanel({
 
 function OverdueCard({ count, amount }: { count: number; amount: number }) {
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">
           Santé financière
@@ -270,7 +270,7 @@ function OverdueCard({ count, amount }: { count: number; amount: number }) {
 
 function SchoolsPanel({ schools }: { schools: School[] }) {
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Écoles</h3>
         <Link
@@ -314,26 +314,42 @@ function SchoolsPanel({ schools }: { schools: School[] }) {
 }
 
 const ACTION_LABEL: Record<AccessLog["action_type"], { text: string; cls: string }> = {
-  SEAL: { text: "Scellement", cls: "bg-emerald-soft text-forest" },
-  DECRYPT: { text: "Déchiffrement", cls: "bg-orange-soft text-orange" },
-  PRINT: { text: "Impression", cls: "bg-sky-100 text-sky-700" },
-  FAILED_ATTEMPT: { text: "Tentative échouée", cls: "bg-rose-100 text-rose-600" },
+  SEAL: { text: "Scellement", cls: "bg-glow/15 text-glow" },
+  DECRYPT: { text: "Déchiffrement", cls: "bg-chalk/15 text-chalk" },
+  PRINT: { text: "Impression", cls: "bg-sky-400/15 text-sky-300" },
+  FAILED_ATTEMPT: { text: "Tentative échouée", cls: "bg-rose/20 text-rose-300" },
 };
 
+/**
+ * Coffre-fort d'archives : la zone la plus sensible du produit reçoit le
+ * traitement le plus grave — fond nuit, sceau or, journal d'accès.
+ */
 function SecurityPanel({ logs }: { logs: AccessLog[] }) {
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-heading text-base font-bold text-ink">
-          Accès aux archives
-        </h3>
-        <ShieldCheck className="h-5 w-5 text-forest" />
+    <div className="on-night relative overflow-hidden rounded-card bg-night p-5 text-white shadow-night ring-1 ring-seal/30">
+      <div
+        className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-15"
+        style={{
+          background:
+            "radial-gradient(closest-side, var(--color-seal), transparent)",
+        }}
+      />
+      <div className="relative mb-1 flex items-center justify-between">
+        <h3 className="font-heading text-base font-bold">Accès aux archives</h3>
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-seal/15 ring-1 ring-seal/40">
+          <ShieldCheck className="h-4 w-4 text-seal" />
+        </span>
       </div>
+      <p className="relative mb-4 text-[11px] uppercase tracking-widest text-seal/80">
+        Coffre-fort · chiffré · journalisé
+      </p>
 
       {logs.length === 0 ? (
-        <EmptyState message="Aucun accès au coffre-fort enregistré." />
+        <p className="relative py-6 text-center text-sm text-white/50">
+          Aucun accès au coffre-fort enregistré.
+        </p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="relative space-y-3">
           {logs.slice(0, 6).map((log) => {
             const meta = ACTION_LABEL[log.action_type];
             return (
@@ -344,8 +360,8 @@ function SecurityPanel({ logs }: { logs: AccessLog[] }) {
                   {meta.text}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-sm text-ink">{log.admin_email}</p>
-                  <p className="text-xs text-ink/45">
+                  <p className="truncate text-sm text-white/90">{log.admin_email}</p>
+                  <p className="nums text-xs text-white/45">
                     {log.target_matricule} ·{" "}
                     {new Intl.DateTimeFormat("fr-FR", {
                       day: "2-digit",

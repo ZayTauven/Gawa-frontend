@@ -1,13 +1,16 @@
+"use client";
+
 import Image from "next/image";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
+import { CountUp } from "@/components/motion/CountUp";
 
 type Tone = "emerald" | "orange" | "sky" | "violet";
 
 const TONES: Record<Tone, string> = {
-  emerald: "bg-emerald-soft",
-  orange: "bg-orange-soft",
-  sky: "bg-sky-100",
-  violet: "bg-violet-100",
+  emerald: "bg-emerald-soft ring-emerald/15",
+  orange: "bg-orange-soft ring-orange/15",
+  sky: "bg-sky-100 ring-sky-300/30",
+  violet: "bg-violet-100 ring-violet-300/30",
 };
 
 /** Carte de statistique "plateforme" : pastille (sticker illustré OU icône) + grand chiffre. */
@@ -27,10 +30,10 @@ export function StickerStat({
   tone?: Tone;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-card border border-line bg-white p-4 shadow-sm">
+    <div className="lift flex items-center gap-4 rounded-card border border-line bg-white p-4 shadow-card">
       <div
         className={cn(
-          "flex h-14 w-14 shrink-0 items-center justify-center rounded-lg",
+          "flex h-14 w-14 shrink-0 items-center justify-center rounded-lg ring-1",
           TONES[tone],
         )}
       >
@@ -41,8 +44,8 @@ export function StickerStat({
         )}
       </div>
       <div className="min-w-0">
-        <p className="font-heading text-2xl font-extrabold leading-none text-ink">
-          {value}
+        <p className="nums font-heading text-2xl font-extrabold leading-none text-ink">
+          <CountUp value={value} />
         </p>
         <p className="mt-1 truncate text-sm font-medium text-ink/70">{label}</p>
         {caption && <p className="text-xs text-ink/45">{caption}</p>}

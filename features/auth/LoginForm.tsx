@@ -39,9 +39,12 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 flex flex-col items-center text-center">
-        <Hibou pose="hello" size={72} />
-        <Logo className="mt-3 scale-110" />
-        <h1 className="mt-5 font-heading text-2xl font-extrabold tracking-tight text-ink">
+        {/* Sur desktop, la marque vit dans le panneau nuit à gauche. */}
+        <div className="flex flex-col items-center lg:hidden">
+          <Hibou pose="hello" size={72} />
+          <Logo className="mt-3 scale-110" />
+        </div>
+        <h1 className="mt-5 font-heading text-2xl font-extrabold tracking-tight text-ink lg:mt-0">
           Espace administration
         </h1>
         <p className="mt-1 text-sm text-ink/60">
@@ -94,7 +97,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-control bg-forest px-5 py-3 font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-60"
+          className="w-full rounded-control bg-forest px-5 py-3 font-semibold text-white shadow-card transition-[background-color,box-shadow] hover:bg-deeper hover:shadow-lift disabled:opacity-60"
         >
           {submitting ? "Connexion…" : "Se connecter"}
         </button>

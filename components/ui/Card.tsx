@@ -1,16 +1,20 @@
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 
 export function Card({
   className,
+  interactive = false,
   children,
 }: {
   className?: string;
+  /** Lift discret au survol — réservé aux cartes cliquables/explorables. */
+  interactive?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div
       className={cn(
-        "rounded-card border border-line bg-white p-5 shadow-sm",
+        "rounded-card border border-line bg-white p-5 shadow-card",
+        interactive && "lift",
         className,
       )}
     >
@@ -36,7 +40,7 @@ export function StatCard({
 
   return (
     <Card>
-      <p className={cn("font-heading text-3xl font-extrabold", accentClass)}>
+      <p className={cn("nums font-heading text-3xl font-extrabold", accentClass)}>
         {value}
       </p>
       <p className="mt-1 text-sm text-ink/60">{label}</p>

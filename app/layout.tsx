@@ -3,7 +3,7 @@ import { Schibsted_Grotesk, Albert_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-// Direction « Craie vive » : Schibsted Grotesk (titres) + Albert Sans (corps).
+// Identité Gawa : Schibsted Grotesk (titres) + Albert Sans (corps).
 const schibsted = Schibsted_Grotesk({
   variable: "--font-schibsted",
   subsets: ["latin"],
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${schibsted.variable} ${albert.variable} h-full antialiased`}
+      className={`${schibsted.variable} ${albert.variable} h-full font-sans antialiased`}
     >
       <body className="min-h-full">
         <Providers>{children}</Providers>

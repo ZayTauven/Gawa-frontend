@@ -6,6 +6,9 @@ import { useAuthStore } from "@/lib/auth/useAuthStore";
 import { getRoleHome, isPathAllowed } from "@/lib/auth/roles";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
+import { Logo } from "@/components/ui/Logo";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { getRoleAccent } from "@/lib/ui/roleAccent";
 
 export default function DashboardLayout({
   children,
@@ -34,19 +37,22 @@ export default function DashboardLayout({
   // Tant que la session n'est pas résolue (ou accès refusé), on évite le flash.
   if (status !== "authenticated" || !user || !isPathAllowed(user.uiRole, pathname)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-soft">
-        <p className="text-sm text-ink/50">Chargement…</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-night">
+        <Logo variant="light" />
+        <p className="animate-pulse text-sm text-white/50">Chargement…</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-soft">
+    <SidebarProvider
+      style={{ "--role-accent": getRoleAccent(user.uiRole) } as React.CSSProperties}
+    >
       <Sidebar role={user.uiRole} />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <SidebarInset className="min-w-0 bg-paper">
         <Topbar user={user} />
         <main className="flex-1 p-6 lg:p-8">{children}</main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

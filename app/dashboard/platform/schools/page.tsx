@@ -1,9 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { SearchField } from "@/components/ui/SearchField";
+import { TextInput } from "@/components/ui/form-field";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
 import {
   useCreateSchool,
@@ -14,8 +17,6 @@ import {
 import type { School } from "@/features/platform/types";
 
 const PAGE_SIZE = 8;
-const inputCls =
-  "rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft";
 
 export default function SchoolsPage() {
   const schools = useSchools();
@@ -50,18 +51,12 @@ export default function SchoolsPage() {
       <PageHeader title="Écoles" subtitle="Créez et administrez les établissements du réseau." />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
-          <input
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(0);
-            }}
-            placeholder="Rechercher (code ou nom)…"
-            className={`${inputCls} w-full pl-9`}
-          />
-        </div>
+        <SearchField
+          value={query}
+          onChange={(v) => { setQuery(v); setPage(0); }}
+          placeholder="Rechercher (code ou nom)…"
+          className="max-w-xs flex-1"
+        />
         <Button onClick={() => setShowCreate((v) => !v)}>
           <Plus className="h-4 w-4" /> Nouvelle école
         </Button>
@@ -83,26 +78,28 @@ export default function SchoolsPage() {
               },
             );
           }}
-          className="mb-4 flex flex-col gap-3 rounded-card border border-line bg-white p-4 shadow-sm sm:flex-row sm:items-end"
+          className="mb-4 flex flex-col gap-4 rounded-card border border-line bg-white p-5 shadow-card sm:flex-row sm:items-end"
         >
-          <label className="flex-1 text-sm font-medium text-ink">
-            Code
-            <input
+          <div className="flex flex-1 flex-col gap-1.5">
+            <label htmlFor="school-code" className="text-sm font-medium text-ink">Code</label>
+            <TextInput
+              id="school-code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="Ex. LYC-MOR"
-              className={`${inputCls} mt-1 w-full`}
             />
-          </label>
-          <label className="flex-[2] text-sm font-medium text-ink">
-            Nom de l&apos;établissement
-            <input
+          </div>
+          <div className="flex flex-[2] flex-col gap-1.5">
+            <label htmlFor="school-name" className="text-sm font-medium text-ink">
+              Nom de l&apos;établissement
+            </label>
+            <TextInput
+              id="school-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex. Lycée de Moroni"
-              className={`${inputCls} mt-1 w-full`}
             />
-          </label>
+          </div>
           <Button type="submit" disabled={createSchool.isPending}>
             {createSchool.isPending ? "Création…" : "Créer"}
           </Button>
@@ -114,7 +111,7 @@ export default function SchoolsPage() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-card">
         {rows.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucune école ne correspond." />
@@ -129,24 +126,26 @@ export default function SchoolsPage() {
       </div>
 
       {pageCount > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-3 text-sm">
-          <button
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
             disabled={current === 0}
             onClick={() => setPage(current - 1)}
-            className="rounded-lg px-3 py-1.5 font-medium text-forest disabled:opacity-40"
           >
             Précédent
-          </button>
-          <span className="text-ink/50">
+          </Button>
+          <span className="text-sm text-ink/50">
             Page {current + 1} / {pageCount}
           </span>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             disabled={current >= pageCount - 1}
             onClick={() => setPage(current + 1)}
-            className="rounded-lg px-3 py-1.5 font-medium text-forest disabled:opacity-40"
           >
             Suivant
-          </button>
+          </Button>
         </div>
       )}
     </>
@@ -166,10 +165,10 @@ function SchoolRow({ school }: { school: School }) {
           {school.code}
         </span>
         {editing ? (
-          <input
+          <TextInput
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className={`${inputCls} w-56`}
+            className="w-56"
           />
         ) : (
           <span className="font-medium text-ink">{school.name}</span>
@@ -227,18 +226,17 @@ function SchoolRow({ school }: { school: School }) {
             >
               {school.is_active ? "Désactiver" : "Activer"}
             </Button>
-            <Button
-              size="sm"
-              variant="danger"
-              disabled={remove.isPending}
-              onClick={() => {
-                if (confirm(`Supprimer l'école « ${school.name} » ?`)) {
-                  remove.mutate(school.id);
-                }
-              }}
+            <ConfirmDialog
+              title={`Supprimer « ${school.name} » ?`}
+              description="Cette action est irréversible. L'école et toutes ses données seront supprimées."
+              confirmLabel="Supprimer"
+              confirmVariant="danger"
+              onConfirm={() => remove.mutate(school.id)}
             >
-              Supprimer
-            </Button>
+              <Button size="sm" variant="danger" disabled={remove.isPending}>
+                Supprimer
+              </Button>
+            </ConfirmDialog>
           </>
         )}
       </div>

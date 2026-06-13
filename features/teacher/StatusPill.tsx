@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 import type { ChapterStatus, ResourceStatus } from "./types";
 
 const LABELS: Record<string, { text: string; cls: string }> = {

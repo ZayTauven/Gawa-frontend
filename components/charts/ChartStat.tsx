@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 import { Sparkline } from "./Sparkline";
 
 type Tone = "emerald" | "orange" | "sky" | "violet";
@@ -36,7 +36,7 @@ export function ChartStat({
   tone?: Tone;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-card border border-line bg-white px-4 py-3.5 shadow-sm">
+    <div className="flex items-center gap-3 rounded-card border border-line bg-white px-4 py-3.5 shadow-card">
       <span
         className={cn(
           "flex h-11 w-11 shrink-0 items-center justify-center rounded-control",

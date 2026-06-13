@@ -3,10 +3,11 @@
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { FilterPill } from "@/components/ui/FilterPill";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
 import { toast } from "@/components/ui/Toast";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 import { dayKey, todayKey } from "@/lib/utils/date";
 import {
   useAttendance,
@@ -107,23 +108,19 @@ export default function TeacherClassesPage() {
       {classes.length === 0 ? (
         <EmptyState message="Aucune classe rattachée à votre école pour le moment." />
       ) : (
-        <div className="space-y-5">
+        <div className="rise-stagger space-y-5">
           {/* Sélecteur de classe */}
           <div className="flex flex-wrap gap-2">
             {classes.map((c) => (
-              <button
+              <FilterPill
                 key={c.id}
+                active={c.id === activeId}
                 onClick={() => selectClass(c.id)}
-                className={cn(
-                  "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
-                  c.id === activeId
-                    ? "bg-forest text-white"
-                    : "bg-white text-ink/70 ring-1 ring-line hover:bg-soft",
-                )}
+                className="px-4 py-2 text-sm"
               >
                 {c.name}
                 <span className="ml-2 opacity-60">{c.student_count}</span>
-              </button>
+              </FilterPill>
             ))}
           </div>
 

@@ -14,7 +14,7 @@ import {
 import { ArrowUpDown, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { SearchField } from "./SearchField";
 import { EmptyState } from "./States";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 
 /**
  * Table de données outillée (recherche + tri + pagination + export CSV),
@@ -116,9 +116,9 @@ export function DataTable<T>({
         </div>
       )}
 
-      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-card">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="nums w-full text-sm">
             <thead>
               {table.getHeaderGroups().map((hg) => (
                 <tr key={hg.id} className="border-b border-line bg-soft/60">

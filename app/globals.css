@@ -1,40 +1,81 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* ----------------------------------------------------------------------------
    Gawa Web Admin — Design tokens (Tailwind v4)
-   Direction artistique « C · Craie vive » : le tableau d'école réinventé —
-   émeraude vive, traits de marqueur, Schibsted Grotesk + Albert Sans.
-   (cf. handoff design « Direction Gawa.html », direction retenue par l'équipe)
+   Direction artistique « Encre & Lumière » : évolution de « C · Craie vive ».
+   Bi-tonal : shell vert-nuit profond (tableau d'école), contenu papier clair.
+   Émeraude vive conservée, accent craie (jaune), sceau or pour les archives.
+   Schibsted Grotesk + Albert Sans.
 ---------------------------------------------------------------------------- */
 @theme {
   /* Verts de marque — du plus profond (texte/CTA) à l'accent vif */
   --color-deeper: #08432f;
-  --color-forest: #0c5a41; /* « deep » — CTA primaire, sidebar, avatars */
+  --color-forest: #0c5a41; /* « deep » — CTA primaire, avatars */
   --color-emerald: #17b26a; /* accent vif — positif, filets actifs */
   --color-emerald-soft: #ddf3e6;
   --color-mint: #f0f8f2;
 
-  /* Accents — orange = attention/CTA secondaire, rose = relance */
+  /* Nuit — shell (sidebar, login, zones coffre-fort) */
+  --color-night: #071f17;
+  --color-night-soft: #0e3527; /* surfaces élevées sur fond nuit */
+  --color-glow: #3ddc97; /* accent lumineux lisible sur fond nuit */
+
+  /* Accents — craie/orange = attention, rose = relance, or = sceau officiel */
   --color-orange: #f59e0b;
   --color-orange-soft: #fdf0d2;
+  --color-chalk: #ffc94d;
   --color-rose: #e0506a;
   --color-rose-soft: #f9e3e6;
+  --color-seal: #c9a227; /* or — archives officielles, certifications */
+  --color-seal-soft: #f7efd8;
 
   /* Encre & surfaces */
   --color-ink: #10291f;
-  --color-soft: #f5f8f5; /* fond d'application */
+  --color-paper: #f7f9f6; /* fond d'application */
+  --color-soft: #f5f8f5; /* surfaces neutres secondaires */
   --color-line: #e4eae4;
 
   /* Rayons maîtrisés : cartes 14px, contrôles 8px */
   --radius-card: 14px;
   --radius-control: 8px;
 
+  /* Ombres — profondeur douce, teintée encre (jamais de gris bleuté) */
+  --shadow-card: 0 1px 2px rgb(16 41 31 / 0.05), 0 4px 12px -4px rgb(16 41 31 / 0.06);
+  --shadow-lift: 0 2px 4px rgb(16 41 31 / 0.06), 0 12px 24px -8px rgb(16 41 31 / 0.14);
+  --shadow-night: 0 8px 28px -8px rgb(7 31 23 / 0.45);
+
   --font-sans: var(--font-albert), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-schibsted), var(--font-albert), sans-serif;
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-rise: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 body {
-  background: var(--color-soft);
+  background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
@@ -46,8 +87,169 @@ h4 {
   font-family: var(--font-heading);
 }
 
+/* Les chiffres de stats/finance s'alignent comme dans un registre. */
+.nums {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Focus clavier visible (WCAG AA) — anneau émeraude cohérent sur toute l'app */
 :focus-visible {
   outline: 2px solid var(--color-emerald);
   outline-offset: 2px;
+}
+
+/* Sur fond nuit, l'anneau émeraude profond est invisible → version lumineuse. */
+.on-night :focus-visible {
+  outline-color: var(--color-glow);
+}
+
+/* Squelettes premium : shimmer doux, désactivé si reduced-motion. */
+.skeleton {
+  border-radius: var(--radius-control);
+  background: linear-gradient(
+    100deg,
+    var(--color-line) 40%,
+    #f0f4f0 50%,
+    var(--color-line) 60%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Entrée en cascade des blocs de dashboard — CSS pur (budget perf serré). */
+.rise-stagger > * {
+  animation: var(--animate-rise);
+}
+.rise-stagger > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+.rise-stagger > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.rise-stagger > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+.rise-stagger > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+.rise-stagger > *:nth-child(n + 6) {
+  animation-delay: 300ms;
+}
+
+/* Cartes interactives : lift discret (2px) + ombre — jamais de zoom. */
+.lift {
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .rise-stagger > * {
+    animation: none;
+  }
+  .lift,
+  .lift:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Pont shadcn/ui ↔ tokens Gawa : les variables sémantiques shadcn sont
+   alimentées par la palette « Encre & Lumière » (valeurs dans :root plus bas).
+   Les polices restent celles de la marque (Schibsted + Albert via next/font). */
+@theme inline {
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Surfaces papier + encre */
+  --background: #f7f9f6; /* paper */
+  --foreground: #10291f; /* ink */
+  --card: #ffffff;
+  --card-foreground: #10291f;
+  --popover: #ffffff;
+  --popover-foreground: #10291f;
+  /* Marque */
+  --primary: #0c5a41; /* forest */
+  --primary-foreground: #ffffff;
+  --secondary: #f0f8f2; /* mint */
+  --secondary-foreground: #0c5a41;
+  --muted: #f5f8f5; /* soft */
+  --muted-foreground: #5c6f66; /* ink atténuée, contraste AA */
+  --accent: #ddf3e6; /* emerald-soft */
+  --accent-foreground: #0c5a41;
+  --destructive: #e0506a; /* rose */
+  --border: #e4eae4; /* line */
+  --input: #e4eae4;
+  --ring: #17b26a; /* emerald */
+  /* Data-viz : sémantique Gawa (positif, attention, relance, info, profond) */
+  --chart-1: #17b26a;
+  --chart-2: #f59e0b;
+  --chart-3: #e0506a;
+  --chart-4: #38bdf8;
+  --chart-5: #0c5a41;
+  --radius: 0.5rem; /* 8px — échelle « contrôles » maîtrisée */
+  /* Sidebar = la nuit du shell « Encre & Lumière » */
+  --sidebar: #071f17; /* night */
+  --sidebar-foreground: rgb(255 255 255 / 0.88);
+  --sidebar-primary: #3ddc97; /* glow */
+  --sidebar-primary-foreground: #071f17;
+  --sidebar-accent: rgb(255 255 255 / 0.1);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 0.1);
+  --sidebar-ring: #3ddc97;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

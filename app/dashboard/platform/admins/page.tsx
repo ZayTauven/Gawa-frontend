@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { KeyRound, Plus, Search } from "lucide-react";
+import { KeyRound, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { SearchField } from "@/components/ui/SearchField";
+import { Field, TextInput, Select } from "@/components/ui/form-field";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
 import {
   useCreateSchoolAdmin,
@@ -13,9 +15,6 @@ import {
   useSetUserActive,
 } from "@/features/platform/hooks";
 import type { PlatformUser } from "@/features/platform/types";
-
-const inputCls =
-  "rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-emerald focus:ring-2 focus:ring-emerald-soft";
 
 export default function AdminsPage() {
   const users = usePlatformUsers();
@@ -70,15 +69,12 @@ export default function AdminsPage() {
       />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher (email ou école)…"
-            className={`${inputCls} w-full pl-9`}
-          />
-        </div>
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          placeholder="Rechercher (email ou école)…"
+          className="max-w-xs flex-1"
+        />
         <Button onClick={() => setShowCreate((v) => !v)}>
           <Plus className="h-4 w-4" /> Nouvel admin
         </Button>
@@ -87,65 +83,53 @@ export default function AdminsPage() {
       {showCreate && (
         <form
           onSubmit={submit}
-          className="mb-4 grid gap-3 rounded-card border border-line bg-white p-4 shadow-sm sm:grid-cols-2"
+          className="mb-4 grid gap-4 rounded-card border border-line bg-white p-5 shadow-card sm:grid-cols-2"
         >
-          <label className="text-sm font-medium text-ink">
-            Email
-            <input
+          <Field label="Email">
+            <TextInput
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className={`${inputCls} mt-1 w-full`}
               placeholder="directeur@ecole.km"
             />
-          </label>
-          <label className="text-sm font-medium text-ink">
-            École
-            <select
+          </Field>
+          <Field label="École">
+            <Select
               value={form.default_school}
-              onChange={(e) => setForm({ ...form, default_school: e.target.value })}
-              className={`${inputCls} mt-1 w-full`}
-            >
-              <option value="">— Choisir —</option>
-              {schoolList.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.code})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-sm font-medium text-ink">
-            Prénom
-            <input
+              onValueChange={(v) => setForm({ ...form, default_school: v })}
+              placeholder="— Choisir —"
+              options={schoolList.map((s) => ({
+                value: s.id,
+                label: `${s.name} (${s.code})`,
+              }))}
+            />
+          </Field>
+          <Field label="Prénom">
+            <TextInput
               value={form.first_name}
               onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-              className={`${inputCls} mt-1 w-full`}
             />
-          </label>
-          <label className="text-sm font-medium text-ink">
-            Nom
-            <input
+          </Field>
+          <Field label="Nom">
+            <TextInput
               value={form.last_name}
               onChange={(e) => setForm({ ...form, last_name: e.target.value })}
-              className={`${inputCls} mt-1 w-full`}
             />
-          </label>
-          <label className="text-sm font-medium text-ink sm:col-span-2">
-            Mot de passe initial (min. 8 caractères)
-            <input
+          </Field>
+          <Field label="Mot de passe initial (min. 8 caractères)" className="sm:col-span-2">
+            <TextInput
               type="text"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className={`${inputCls} mt-1 w-full`}
               placeholder="••••••••"
             />
-          </label>
-          <div className="sm:col-span-2">
+          </Field>
+          <div className="flex items-center gap-3 sm:col-span-2">
             <Button type="submit" disabled={createAdmin.isPending}>
               {createAdmin.isPending ? "Création…" : "Créer et affecter"}
             </Button>
             {createAdmin.isError && (
-              <span className="ml-3 text-sm text-orange">
+              <span className="text-sm text-orange">
                 Échec (email déjà utilisé ?).
               </span>
             )}
@@ -153,7 +137,7 @@ export default function AdminsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-card">
         {admins.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucun administrateur d'école." />
@@ -174,66 +158,99 @@ function AdminRow({ admin }: { admin: PlatformUser }) {
   const setActive = useSetUserActive();
   const resetPwd = useResetAdminPassword();
   const [done, setDone] = useState<string | null>(null);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [newPwd, setNewPwd] = useState("");
 
   const fullName =
     [admin.first_name, admin.last_name].filter(Boolean).join(" ") || admin.email;
 
+  function handleReset() {
+    resetPwd.mutate(
+      { id: admin.id, password: newPwd },
+      {
+        onSuccess: () => {
+          setDone("Mot de passe réinitialisé");
+          setResetOpen(false);
+          setNewPwd("");
+          setTimeout(() => setDone(null), 3000);
+        },
+      },
+    );
+  }
+
   return (
-    <li className="flex flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-forest text-sm font-bold text-white">
-          {(admin.first_name?.[0] ?? admin.email[0]).toUpperCase()}
-        </span>
-        <div>
-          <p className="font-medium text-ink">{fullName}</p>
-          <p className="text-xs text-ink/50">
-            {admin.email} · {admin.default_school_code ?? "—"}
-          </p>
+    <li className="flex flex-col">
+      <div className="flex flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-forest text-sm font-bold text-white">
+            {(admin.first_name?.[0] ?? admin.email[0]).toUpperCase()}
+          </span>
+          <div>
+            <p className="font-medium text-ink">{fullName}</p>
+            <p className="text-xs text-ink/50">
+              {admin.email} · {admin.default_school_code ?? "—"}
+            </p>
+          </div>
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+              admin.is_active ? "bg-emerald-soft text-forest" : "bg-rose-100 text-rose-600"
+            }`}
+          >
+            {admin.is_active ? "Actif" : "Désactivé"}
+          </span>
         </div>
-        <span
-          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-            admin.is_active ? "bg-emerald-soft text-forest" : "bg-rose-100 text-rose-600"
-          }`}
-        >
-          {admin.is_active ? "Actif" : "Désactivé"}
-        </span>
+
+        <div className="flex items-center gap-2">
+          {done && <span className="text-xs font-medium text-emerald">{done}</span>}
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={resetPwd.isPending}
+            onClick={() => {
+              setResetOpen((v) => !v);
+              setNewPwd("");
+            }}
+          >
+            <KeyRound className="h-4 w-4" /> Reset MDP
+          </Button>
+          <Button
+            size="sm"
+            variant={admin.is_active ? "ghost" : "secondary"}
+            disabled={setActive.isPending}
+            onClick={() => setActive.mutate({ id: admin.id, isActive: !admin.is_active })}
+          >
+            {admin.is_active ? "Désactiver" : "Réactiver"}
+          </Button>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        {done && <span className="text-xs font-medium text-emerald">{done}</span>}
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={resetPwd.isPending}
-          onClick={() => {
-            const pwd = prompt(`Nouveau mot de passe pour ${admin.email} (min. 8) :`);
-            if (!pwd) return;
-            if (pwd.length < 8) {
-              alert("Le mot de passe doit faire au moins 8 caractères.");
-              return;
-            }
-            resetPwd.mutate(
-              { id: admin.id, password: pwd },
-              {
-                onSuccess: () => {
-                  setDone("Mot de passe réinitialisé");
-                  setTimeout(() => setDone(null), 3000);
-                },
-              },
-            );
-          }}
-        >
-          <KeyRound className="h-4 w-4" /> Reset MDP
-        </Button>
-        <Button
-          size="sm"
-          variant={admin.is_active ? "ghost" : "secondary"}
-          disabled={setActive.isPending}
-          onClick={() => setActive.mutate({ id: admin.id, isActive: !admin.is_active })}
-        >
-          {admin.is_active ? "Désactiver" : "Réactiver"}
-        </Button>
-      </div>
+      {resetOpen && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-line bg-soft px-5 py-3">
+          <TextInput
+            value={newPwd}
+            onChange={(e) => setNewPwd(e.target.value)}
+            placeholder="Nouveau mot de passe (min. 8 caractères)"
+            className="flex-1"
+          />
+          <Button
+            size="sm"
+            disabled={resetPwd.isPending || newPwd.length < 8}
+            onClick={handleReset}
+          >
+            {resetPwd.isPending ? "Réinitialisation…" : "Réinitialiser"}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setResetOpen(false);
+              setNewPwd("");
+            }}
+          >
+            Annuler
+          </Button>
+        </div>
+      )}
     </li>
   );
 }

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 
 /** Anneau de progression circulaire (SVG, sans dépendance). */
 export function RingProgress({

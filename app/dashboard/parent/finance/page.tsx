@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/Card";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 import { useChildren, useInvoices } from "@/features/parent/hooks";
 import type { Invoice } from "@/features/parent/types";
 
@@ -49,7 +49,7 @@ export default function ParentFinancePage() {
         <StatCard label="Reste à payer (KMF)" value={totals.due.toLocaleString("fr-FR")} accent="orange" />
       </div>
 
-      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-card">
         {list.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucune facture." />

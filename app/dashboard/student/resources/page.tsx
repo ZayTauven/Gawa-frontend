@@ -121,7 +121,7 @@ export default function StudentResourcesPage() {
             return (
               <li
                 key={r.id}
-                className="flex items-start gap-3 rounded-card border border-line bg-white p-4 shadow-sm"
+                className="flex items-start gap-3 rounded-card border border-line bg-white p-4 shadow-card"
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-mint text-forest">
                   <Icon className="h-5 w-5" />

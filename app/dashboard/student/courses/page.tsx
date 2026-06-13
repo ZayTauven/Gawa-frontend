@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { FileText, Lock } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
 import { useChapters, useCourses } from "@/features/student/hooks";
 import type { Chapter } from "@/features/student/types";
@@ -52,7 +52,7 @@ export default function StudentCoursesPage() {
             const lockedCount = all.length - unlocked.length;
             return (
               <TabsContent key={course.id} value={course.id}>
-                <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
+                <div className="overflow-hidden rounded-card border border-line bg-white shadow-card">
                   <div className="border-b border-line px-5 py-4">
                     <h2 className="font-heading text-lg font-bold text-ink">{course.title}</h2>
                     <p className="text-xs text-ink/50">{course.teacher_name}</p>

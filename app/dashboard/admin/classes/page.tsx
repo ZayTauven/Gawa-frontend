@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ChevronDown, Users } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 import { useClassrooms } from "@/features/admin/hooks";
 
 export default function AdminClassesPage() {
@@ -29,7 +29,7 @@ export default function AdminClassesPage() {
           {classes.map((c) => {
             const open = openId === c.id;
             return (
-              <div key={c.id} className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
+              <div key={c.id} className="overflow-hidden rounded-card border border-line bg-white shadow-card">
                 <button
                   onClick={() => setOpenId(open ? null : c.id)}
                   className="flex w-full items-center justify-between px-5 py-4 text-left"

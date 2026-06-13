@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/Card";
+import { FilterPill } from "@/components/ui/FilterPill";
 import { Spinner, ErrorState, EmptyState } from "@/components/ui/States";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 import { useInvoices, useStudents } from "@/features/admin/hooks";
 import type { InvoiceStatus } from "@/features/admin/types";
 
@@ -66,22 +67,17 @@ export default function AdminFinancePage() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
-          <button
+          <FilterPill
             key={f.value}
+            active={filter === f.value}
             onClick={() => setFilter(f.value)}
-            className={cn(
-              "rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors",
-              filter === f.value
-                ? "bg-forest text-white"
-                : "bg-white text-ink/70 ring-1 ring-line hover:bg-soft",
-            )}
           >
             {f.label}
-          </button>
+          </FilterPill>
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-card border border-line bg-white shadow-sm">
+      <div className="overflow-hidden rounded-card border border-line bg-white shadow-card">
         {rows.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucune facture pour ce filtre." />

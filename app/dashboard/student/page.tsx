@@ -116,7 +116,7 @@ export default function StudentHome() {
           }}
         />
       ) : (
-        <div className="space-y-5">
+        <div className="rise-stagger space-y-5">
           {/* Héro + jauge de performance */}
           <div className="grid gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
@@ -129,7 +129,7 @@ export default function StudentHome() {
                 sticker="/stickers/student-hand.png"
               />
             </div>
-            <div className="flex flex-col items-center justify-center rounded-card border border-line bg-white p-5 shadow-sm">
+            <div className="flex flex-col items-center justify-center rounded-card border border-line bg-white p-5 shadow-card">
               <h3 className="mb-1 self-start font-heading text-base font-bold text-ink">
                 Performance globale
               </h3>
@@ -159,7 +159,7 @@ export default function StudentHome() {
 
           {/* Graphes — scores par quiz + activité de révision */}
           <div className="grid gap-5 lg:grid-cols-3">
-            <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
+            <div className="rounded-card border border-line bg-white p-5 shadow-card lg:col-span-2">
               <h3 className="mb-4 font-heading text-base font-bold text-ink">Scores par quiz</h3>
               {m.quizBars.length === 0 ? (
                 <EmptyState message="Tentez un quiz pour voir vos scores apparaître ici." />
@@ -167,7 +167,7 @@ export default function StudentHome() {
                 <BarChart data={m.quizBars} highlight={m.bestIdx} unit="%" height={170} />
               )}
             </div>
-            <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+            <div className="rounded-card border border-line bg-white p-5 shadow-card">
               <h3 className="font-heading text-base font-bold text-ink">Activité de révision</h3>
               <p className="mb-3 text-xs text-ink/50">Quiz tentés · 7 derniers jours</p>
               <BarChart data={m.activity} unit="" height={150} />
@@ -194,7 +194,7 @@ function ResultsCard({ attempts, quizzes }: { attempts: Attempt[]; quizzes: Quiz
     .sort((a, b) => +new Date(b.completed_at) - +new Date(a.completed_at))
     .slice(0, 4);
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card">
       <h3 className="mb-4 font-heading text-base font-bold text-ink">Mes derniers résultats</h3>
       {recent.length === 0 ? (
         <EmptyState message="Aucun quiz tenté pour l'instant." />
@@ -222,7 +222,7 @@ function ResultsCard({ attempts, quizzes }: { attempts: Attempt[]; quizzes: Quiz
 
 function CoursesPanel({ courses }: { courses: Course[] }) {
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm lg:col-span-2">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-heading text-base font-bold text-ink">Mes cours</h3>
         <Link href="/dashboard/student/courses" className="flex items-center gap-1 text-sm font-semibold text-forest hover:underline">
@@ -255,7 +255,7 @@ function CoursesPanel({ courses }: { courses: Course[] }) {
 
 function ExamsLink() {
   return (
-    <div className="rounded-card border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-line bg-white p-5 shadow-card">
       <h3 className="mb-4 font-heading text-base font-bold text-ink">Préparer les examens</h3>
       <Link
         href="/dashboard/student/exams"
